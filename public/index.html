@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏ID管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #f1f5f9; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .container { width: 100%; max-width: 900px; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-radius: 20px; padding: 40px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); margin: 20px; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.8rem; margin-bottom: 10px; background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 800; }
+        .subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 30px; }
+        .tabs { display: flex; margin-bottom: 30px; background: rgba(15, 23, 42, 0.5); border-radius: 12px; padding: 5px; }
+        .tab { flex: 1; padding: 15px; text-align: center; background: transparent; border: none; color: #94a3b8; font-size: 1.1rem; font-weight: 600; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; }
+        .tab.active { background: rgba(96, 165, 250, 0.2); color: #60a5fa; box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2); }
+        .tab:hover:not(.active) { background: rgba(255, 255, 255, 0.05); color: #cbd5e1; }
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #e2e8f0; font-size: 1rem; }
+        .input-with-icon { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 15px; color: #64748b; font-size: 1.2rem; }
+        input { width: 100%; padding: 16px 16px 16px 45px; background: rgba(15, 23, 42, 0.7); border: 2px solid rgba(100, 116, 139, 0.3); border-radius: 12px; color: white; font-size: 1rem; transition: all 0.3s ease; }
+        input:focus { outline: none; border-color: #60a5fa; background: rgba(15, 23, 42, 0.9); box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2); }
+        input::placeholder { color: #64748b; }
+        .form-note { font-size: 0.9rem; color: #94a3b8; margin-top: 6px; line-height: 1.4; }
+        .button-group { display: flex; gap: 15px; margin-top: 35px; }
+        button { flex: 1; padding: 18px; border: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .primary-btn { background: linear-gradient(90deg, #3b82f6, #8b5cf6); color: white; }
+        .primary-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3); }
+        .secondary-btn { background: rgba(255, 255, 255, 0.08); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .secondary-btn:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-2px); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+        .status-card { background: rgba(15, 23, 42, 0.5); border-radius: 15px; padding: 25px; margin: 30px 0; border-left: 5px solid #10b981; }
+        .status-item { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .status-item:last-child { margin-bottom: 0; border-bottom: none; }
+        .status-label { color: #94a3b8; font-weight: 500; }
+        .status-value { font-weight: 600; color: #60a5fa; max-width: 60%; word-break: break-all; text-align: right; }
+        .result-container { margin-top: 30px; padding: 25px; border-radius: 15px; display: none; }
+        .result-container.show { display: block; animation: fadeIn 0.5s ease; }
+        .result-container.success { background: rgba(16, 185, 129, 0.1); border-left: 5px solid #10b981; }
+        .result-container.error { background: rgba(239, 68, 68, 0.1); border-left: 5px solid #ef4444; }
+        .result-title { font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        .result-content { font-family: 'Consolas', 'Monaco', monospace; white-space: pre-wrap; background: rgba(0, 0, 0, 0.3); padding: 18px; border-radius: 10px; margin-top: 15px; font-size: 0.95rem; max-height: 350px; overflow-y: auto; line-height: 1.5; }
+        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-top-color: #60a5fa; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .container { padding: 25px; } h1 { font-size: 2.2rem; } .button-group { flex-direction: column; } .tabs { flex-direction: column; } }
+        footer { text-align: center; margin-top: 40px; color: #64748b; font-size: 0.9rem; width: 100%; }
+        .security-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; margin-top: 10px; }
+        .error-text { color: #ef4444; font-size: 0.9rem; margin-top: 5px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 游戏ID安全管理系统</h1>
+            <p class="subtitle">安全登录并管理您的游戏身份标识</p>
+            <div class="security-badge">
+                <span>🔒</span> 所有敏感操作均通过安全后端处理
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab active" data-tab="login">🔐 账户登录</button>
+            <button class="tab" data-tab="modify">🆔 修改游戏ID</button>
+            <button class="tab" data-tab="status">📊 系统状态</button>
+        </div>
+        
+        <div id="login-tab" class="tab-content active">
+            <div class="form-group">
+                <label for="login-email">📧 邮箱地址</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">✉️</span>
+                    <input type="email" id="login-email" placeholder="请输入您的游戏账户邮箱" 
+                           value="liewhy1699@gmail.com">
+                </div>
+                <div class="error-text" id="email-error">请输入有效的邮箱地址（例如：example@gmail.com）</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="login-password">🔑 密码</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">🗝️</span>
+                    <input type="password" id="login-password" placeholder="请输入您的密码">
+                </div>
+                <div class="error-text" id="password-error">密码不能少于6个字符</div>
+                <div class="form-note">您的密码仅用于获取Firebase令牌，不会被存储</div>
+            </div>
+            
+            <div class="button-group">
+                <button id="login-btn" class="primary-btn">
+                    <span>🚀 登录账户</span>
+                </button>
+            </div>
+            
+            <div class="status-card" style="display: none;" id="login-status">
+                <div class="status-item">
+                    <span class="status-label">登录状态：</span>
+                    <span id="login-status-text" class="status-value">等待登录...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">用户ID：</span>
+                    <span id="user-id" class="status-value">未获取</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">令牌状态：</span>
+                    <span id="token-status" class="status-value">未获取</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="modify-tab" class="tab-content">
+            <div class="status-card">
+                <div class="status-item">
+                    <span class="status-label">当前登录：</span>
+                    <span id="current-user-email" class="status-value">请先登录</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">后端API：</span>
+                    <span id="backend-url" class="status-value">等待配置</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="new-local-id">🆕 新的游戏ID</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">🏷️</span>
+                    <input type="text" id="new-local-id" placeholder="请输入新的游戏ID（例如：CHARLES）" 
+                           value="CHARLES">
+                </div>
+                <div class="error-text" id="id-error">游戏ID不能为空</div>
+                <div class="form-note">支持特殊格式：<code>[FF6B8B]彩色[C94661]名字</code></div>
+            </div>
+            
+            <div class="button-group">
+                <button id="modify-btn" class="primary-btn" disabled>
+                    <span>✨ 修改游戏ID</span>
+                </button>
+                <button id="generate-btn" class="secondary-btn">
+                    <span>🎲 生成随机ID</span>
+                </button>
+            </div>
+            
+            <div class="result-container" id="modify-result"></div>
+        </div>
+        
+        <div id="status-tab" class="tab-content">
+            <div class="status-card">
+                <div class="status-item">
+                    <span class="status-label">后端状态：</span>
+                    <span id="backend-status" class="status-value">等待检测</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">连接状态：</span>
+                    <span id="connection-status" class="status-value">未连接</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">最后操作：</span>
+                    <span id="last-operation" class="status-value">无</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="backend-config">🔧 后端服务器地址</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">🌐</span>
+                    <input type="text" id="backend-config" placeholder="https://你的后端.onrender.com" 
+                           value="">
+                </div>
+                <div class="form-note">请输入你的Render后端地址，例如：https://game-id-backend.onrender.com</div>
+            </div>
+            
+            <div class="button-group">
+                <button id="check-status-btn" class="primary-btn">
+                    <span>🔄 检查系统状态</span>
+                </button>
+                <button id="save-config-btn" class="secondary-btn">
+                    <span>💾 保存配置</span>
+                </button>
+                <button id="clear-data-btn" class="secondary-btn">
+                    <span>🗑️ 清除数据</span>
+                </button>
+            </div>
+            
+            <div class="result-container" id="status-result"></div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2025 游戏ID管理系统 | 版本 3.0</p>
+        <p style="margin-top: 5px; font-size: 0.8rem; color: #475569;">
+            智能后端地址检测 | 支持自定义配置
+        </p>
+    </footer>
+
+    <script>
+        // 全局状态
+        const appState = {
+            isLoggedIn: false,
+            userEmail: '',
+            userId: '',
+            firebaseToken: '',
+            backendUrl: '', // 这里设为空，让用户手动配置
+            lastResponse: null
+        };
+        
+        // DOM元素
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const loginBtn = document.getElementById('login-btn');
+        const modifyBtn = document.getElementById('modify-btn');
+        const backendConfigInput = document.getElementById('backend-config');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 从本地存储加载配置
+            const savedBackendUrl = localStorage.getItem('backendUrl');
+            if (savedBackendUrl) {
+                appState.backendUrl = savedBackendUrl;
+                backendConfigInput.value = savedBackendUrl;
+                document.getElementById('backend-url').textContent = savedBackendUrl;
+                document.getElementById('backend-status').textContent = '已配置';
+                
+                // 自动检查状态
+                setTimeout(() => checkBackendStatus(), 500);
+            } else {
+                // 提示用户配置
+                showResult('status-result', 'info', 
+                    '⚠️ 请先配置后端服务器地址\n\n' +
+                    '1. 在"系统状态"标签页输入你的Render后端地址\n' +
+                    '2. 点击"保存配置"按钮\n' +
+                    '3. 点击"检查系统状态"测试连接\n\n' +
+                    '示例地址：https://your-backend-name.onrender.com');
+            }
+        });
+        
+        // 标签页切换
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                    if (content.id === `${tabId}-tab`) {
+                        content.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // 邮箱验证函数
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // 显示/隐藏错误信息
+        function showError(elementId, show) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = show ? 'block' : 'none';
+            return show;
+        }
+        
+        // 登录功能
+        loginBtn.addEventListener('click', async () => {
+            if (!appState.backendUrl) {
+                showResult('login-status', 'error', 
+                    '❌ 请先配置后端服务器地址\n\n' +
+                    '切换到"系统状态"标签页，输入你的Render后端地址并保存。');
+                return;
+            }
+            
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            // 验证邮箱
+            const emailError = showError('email-error', !isValidEmail(email));
+            
+            // 验证密码
+            const passwordError = showError('password-error', !password || password.length < 6);
+            
+            if (emailError || passwordError) {
+                return;
+            }
+            
+            // 显示登录状态
+            const statusCard = document.getElementById('login-status');
+            statusCard.style.display = 'block';
+            document.getElementById('login-status-text').textContent = '正在登录...';
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="loading-spinner"></span> 登录中...';
+            
+            try {
+                // 调用后端登录API
+                const response = await fetch(`${appState.backendUrl}/api/login`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `登录失败 (${response.status})`);
+                }
+                
+                if (data.success) {
+                    appState.isLoggedIn = true;
+                    appState.userEmail = email;
+                    appState.firebaseToken = data.token?.idToken || data.idToken;
+                    appState.userId = data.user?.userId || data.userId;
+                    
+                    // 更新UI
+                    document.getElementById('login-status-text').textContent = '登录成功';
+                    document.getElementById('user-id').textContent = appState.userId || '未知';
+                    document.getElementById('token-status').textContent = appState.firebaseToken ? 
+                        '已获取 (' + appState.firebaseToken.substring(0, 20) + '...)' : '空';
+                    
+                    document.getElementById('current-user-email').textContent = email;
+                    modifyBtn.disabled = false;
+                    
+                    showResult('login-status', 'success', 
+                        `✅ 登录成功！\n欢迎回来 ${email}\n用户ID: ${appState.userId}`);
+                    
+                    // 自动切换到修改标签页
+                    document.querySelector('[data-tab="modify"]').click();
+                } else {
+                    throw new Error(data.message || '登录失败');
+                }
+            } catch (error) {
+                document.getElementById('login-status-text').textContent = '登录失败';
+                showResult('login-status', 'error', 
+                    `❌ 登录失败\n错误信息: ${error.message}\n\n请检查：\n1. 后端服务器是否运行\n2. 邮箱密码是否正确\n3. 网络连接是否正常\n\n当前后端地址：${appState.backendUrl}`);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<span>🚀 登录账户</span>';
+            }
+        });
+        
+        // 修改游戏ID
+        modifyBtn.addEventListener('click', async () => {
+            if (!appState.isLoggedIn) {
+                showResult('modify-result', 'error', '请先登录');
+                return;
+            }
+            
+            const newLocalId = document.getElementById('new-local-id').value.trim();
+            const idError = showError('id-error', !newLocalId);
+            
+            if (idError) {
+                return;
+            }
+            
+            modifyBtn.disabled = true;
+            modifyBtn.innerHTML = '<span class="loading-spinner"></span> 修改中...';
+            
+            try {
+                // 调用后端修改ID API
+                const response = await fetch(`${appState.backendUrl}/api/change-id`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        newLocalId,
+                        idToken: appState.firebaseToken
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `修改失败 (${response.status})`);
+                }
+                
+                if (data.success) {
+                    showResult('modify-result', 'success', 
+                        `✅ 游戏ID修改成功！\n\n` +
+                        `新ID: ${data.gameResponse?.newLocalId || newLocalId}\n` +
+                        `消息: ${data.gameResponse?.message || '修改成功'}\n` +
+                        `时间: ${new Date().toLocaleString()}\n\n` +
+                        `完整响应:\n${JSON.stringify(data.gameResponse || {}, null, 2)}`);
+                    
+                    // 更新最后操作时间
+                    document.getElementById('last-operation').textContent = 
+                        `ID已修改为: ${data.gameResponse?.newLocalId || newLocalId}`;
+                } else {
+                    throw new Error(data.message || data.error || '修改失败');
+                }
+            } catch (error) {
+                showResult('modify-result', 'error', 
+                    `❌ 修改失败\n错误信息: ${error.message}\n\n可能的原因：\n1. 游戏API不可用\n2. Token已过期\n3. 网络连接问题\n4. 后端地址配置错误`);
+            } finally {
+                modifyBtn.disabled = false;
+                modifyBtn.innerHTML = '<span>✨ 修改游戏ID</span>';
+            }
+        });
+        
+        // 生成随机ID
+        document.getElementById('generate-btn').addEventListener('click', () => {
+            const prefixes = ['CHARLES', 'DAVID', 'ALICE', 'BOB', 'EVE'];
+            const suffix = Math.floor(100 + Math.random() * 900);
+            const randomId = `${prefixes[Math.floor(Math.random() * prefixes.length)]}${suffix}`;
+            document.getElementById('new-local-id').value = randomId;
+        });
+        
+        // 检查后端状态
+        async function checkBackendStatus() {
+            if (!appState.backendUrl) {
+                showResult('status-result', 'error', '请先输入后端服务器地址');
+                return;
+            }
+            
+            const statusBtn = document.getElementById('check-status-btn');
+            statusBtn.disabled = true;
+            statusBtn.innerHTML = '<span class="loading-spinner"></span> 检查中...';
+            
+            try {
+                const response = await fetch(`${appState.backendUrl}/health`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('backend-status').textContent = '运行正常';
+                    document.getElementById('connection-status').textContent = '已连接';
+                    document.getElementById('backend-url').textContent = appState.backendUrl;
+                    
+                    showResult('status-result', 'success', 
+                        `✅ 后端服务器运行正常\n\n` +
+                        `服务: ${data.service || '游戏ID管理后端'}\n` +
+                        `状态: ${data.status || 'healthy'}\n` +
+                        `时间: ${data.timestamp || new Date().toISOString()}\n` +
+                        `环境: ${data.environment || 'production'}`);
+                } else {
+                    throw new Error(`状态异常: ${response.status}`);
+                }
+            } catch (error) {
+                document.getElementById('backend-status').textContent = '连接失败';
+                document.getElementById('connection-status').textContent = '未连接';
+                
+                showResult('status-result', 'error', 
+                    `❌ 无法连接到后端服务器\n\n` +
+                    `地址: ${appState.backendUrl}\n` +
+                    `错误: ${error.message}\n\n` +
+                    `请检查：\n1. 后端服务器是否启动\n2. 地址是否正确\n3. 网络是否通畅\n4. Render服务是否在线`);
+            } finally {
+                statusBtn.disabled = false;
+                statusBtn.innerHTML = '<span>🔄 检查系统状态</span>';
+            }
+        }
+        
+        document.getElementById('check-status-btn').addEventListener('click', checkBackendStatus);
+        
+        // 保存配置
+        document.getElementById('save-config-btn').addEventListener('click', () => {
+            const newUrl = backendConfigInput.value.trim();
+            if (!newUrl) {
+                showResult('status-result', 'error', '请输入有效的后端地址');
+                return;
+            }
+            
+            // 确保URL以http://或https://开头
+            let finalUrl = newUrl;
+            if (!newUrl.startsWith('http://') && !newUrl.startsWith('https://')) {
+                finalUrl = 'https://' + newUrl;
+                backendConfigInput.value = finalUrl;
+            }
+            
+            // 验证URL格式
+            try {
+                new URL(finalUrl);
+                appState.backendUrl = finalUrl;
+                localStorage.setItem('backendUrl', finalUrl);
+                document.getElementById('backend-url').textContent = finalUrl;
+                document.getElementById('backend-status').textContent = '已保存';
+                
+                showResult('status-result', 'success', 
+                    `✅ 配置已保存\n后端地址: ${finalUrl}\n正在重新连接...`);
+                
+                // 重新检查状态
+                setTimeout(checkBackendStatus, 1000);
+            } catch (error) {
+                showResult('status-result', 'error', 
+                    '❌ 无效的URL地址\n请输入完整的URL\n例如：https://your-backend.onrender.com');
+            }
+        });
+        
+        // 清除数据
+        document.getElementById('clear-data-btn').addEventListener('click', () => {
+            if (confirm('确定要清除所有本地数据吗？这将包括登录状态和配置。')) {
+                appState.isLoggedIn = false;
+                appState.firebaseToken = '';
+                appState.userEmail = '';
+                appState.userId = '';
+                appState.backendUrl = '';
+                
+                localStorage.removeItem('backendUrl');
+                backendConfigInput.value = '';
+                
+                modifyBtn.disabled = true;
+                document.getElementById('current-user-email').textContent = '请先登录';
+                document.getElementById('login-status').style.display = 'none';
+                document.getElementById('backend-url').textContent = '等待配置';
+                document.getElementById('backend-status').textContent = '未配置';
+                document.getElementById('connection-status').textContent = '未连接';
+                
+                showResult('status-result', 'success', 
+                    '✅ 本地数据已清除\n配置已重置\n请重新输入后端地址');
+            }
+        });
+        
+        // 显示结果的辅助函数
+        function showResult(containerId, type, message) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            container.className = `result-container show ${type}`;
+            
+            let title = container.querySelector('.result-title');
+            let content = container.querySelector('.result-content');
+            
+            if (!title) {
+                title = document.createElement('div');
+                title.className = 'result-title';
+                container.appendChild(title);
+            }
+            
+            if (!content) {
+                content = document.createElement('div');
+                content.className = 'result-content';
+                container.appendChild(content);
+            }
+            
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️';
+            const titleText = type === 'success' ? '操作成功' : type === 'error' ? '操作失败' : '提示信息';
+            title.innerHTML = `<span>${icon} ${titleText}</span>`;
+            content.textContent = message;
+            
+            // 自动滚动到结果
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
+</body>
+</html>
