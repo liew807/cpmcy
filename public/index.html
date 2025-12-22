@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPMCY - CPM账号克隆工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="author" content="快手Jack">
+    
+    <style>
+        /* ========== 验证页面样式 ========== */
+        #auth-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f1729 0%, #1e293b 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .auth-container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 0 40px rgba(59, 130, 246, 0.4),
+                inset 0 0 40px rgba(59, 130, 246, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                #3b82f6, #60a5fa, #3b82f6, #60a5fa);
+            border-radius: 22px;
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+            background-size: 400%;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .auth-header h1 {
+            color: #60a5fa;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 0 10px rgba(96, 165, 250, 0.8),
+                0 0 20px rgba(96, 165, 250, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .auth-header p {
+            color: #93c5fd;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .auth-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #93c5fd;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 
+                0 0 20px rgba(59, 130, 246, 0.4),
+                inset 0 0 10px rgba(59, 130, 246, 0.1);
+        }
+
+        .auth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px 35px;
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 10px 25px rgba(59, 130, 246, 0.6),
+                0 0 30px rgba(59, 130, 246, 0.3);
+        }
+
+        .auth-status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 500;
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .auth-status.success {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: #22c55e;
+            display: block;
+        }
+
+        /* ========== 主系统样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1729 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+            line-height: 1.6;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        #main-system {
+            display: none;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 20px;
+            padding: 35px 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            box-shadow: 
+                0 0 40px rgba(59, 130, 246, 0.2),
+                inset 0 0 40px rgba(59, 130, 246, 0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header h1 {
+            color: #60a5fa;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 0 10px rgba(96, 165, 250, 0.8),
+                0 0 20px rgba(96, 165, 250, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .header h1 i {
+            color: #3b82f6;
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+        }
+
+        .subtitle {
+            color: #93c5fd;
+            font-size: 1.2rem;
+            font-weight: 500;
+            opacity: 0.9;
+        }
+
+        .user-info {
+            margin-top: 20px;
+            color: #93c5fd;
+            font-size: 1rem;
+            padding: 10px 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 50px;
+            display: inline-block;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        /* 标签页导航 - 管理员专用 */
+        .tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 15px;
+            padding: 10px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .tabs.user-view {
+            display: none;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: #93c5fd;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 18px;
+            padding: 35px 30px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(59, 130, 246, 0.25);
+            box-shadow: 
+                0 10px 35px rgba(0, 0, 0, 0.4),
+                inset 0 0 25px rgba(59, 130, 246, 0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 
+                0 20px 45px rgba(0, 0, 0, 0.5),
+                0 0 50px rgba(59, 130, 246, 0.15);
+        }
+
+        .card h2 {
+            color: #60a5fa;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.25);
+            text-shadow: 0 0 10px rgba(96, 165, 250, 0.3);
+        }
+
+        .card h2 i {
+            color: #3b82f6;
+            filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.6));
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 18px 35px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .btn i {
+            font-size: 1.3rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(59, 130, 246, 0.5),
+                0 0 35px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 
+                0 15px 35px rgba(59, 130, 246, 0.7),
+                0 0 50px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(99, 102, 241, 0.5),
+                0 0 35px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(239, 68, 68, 0.5),
+                0 0 35px rgba(248, 113, 113, 0.3);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(16, 185, 129, 0.5),
+                0 0 35px rgba(52, 211, 153, 0.3);
+        }
+
+        .btn-sm {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            gap: 8px;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #93c5fd;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 18px 22px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 
+                0 0 20px rgba(59, 130, 246, 0.4),
+                inset 0 0 15px rgba(59, 130, 246, 0.1);
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            color: #e2e8f0;
+        }
+
+        th {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .status-used {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        /* 克隆工具原有样式 */
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .info-row {
+            background: rgba(30, 41, 59, 0.6);
+            padding: 18px;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            display: block;
+            color: #93c5fd;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            display: block;
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.15));
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            padding: 22px;
+            border-radius: 12px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.15);
+        }
+
+        .progress-container {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
+            height: 25px;
+            overflow: hidden;
+            margin: 25px 0;
+            position: relative;
+            border: 2px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #3b82f6 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            position: relative;
+            background-size: 200% 100%;
+            animation: progressGlow 2s linear infinite;
+        }
+
+        @keyframes progressGlow {
+            0% { background-position: 200% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        /* 克隆工具特定样式 */
+        .operation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-item {
+            position: relative;
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .option-item label {
+            display: block;
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.2);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #93c5fd;
+        }
+
+        .option-item input[type="radio"]:checked + label {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            color: #ffffff;
+        }
+
+        .time-estimate {
+            text-align: center;
+            color: #93c5fd;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .status-log {
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .log-entry {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .author-info {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1));
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            color: #a78bfa;
+            padding: 18px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #93c5fd;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            color: #93c5fd;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 25px 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ========== 验证页面 ========== -->
+    <div id="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1><i class="fas fa-shield-alt"></i> CPMCY 工具</h1>
+                <p>CPM账号克隆工具 | 快手Jack制作</p>
+            </div>
+            
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="access-key"><i class="fas fa-key"></i> 访问密钥</label>
+                    <input type="text" id="access-key" placeholder="请输入密钥" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> 用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" required>
+                </div>
+                
+                <div class="form-group" id="register-fields" style="display: none;">
+                    <label for="user-email">邮箱地址</label>
+                    <input type="email" id="user-email" placeholder="请输入邮箱地址">
+                </div>
+                
+                <div class="form-group" id="password-fields" style="display: none;">
+                    <label for="user-password">密码</label>
+                    <input type="password" id="user-password" placeholder="请输入密码">
+                </div>
+            </div>
+            
+            <button id="verify-btn" class="auth-btn">
+                <i class="fas fa-lock"></i> 验证密钥
+            </button>
+            
+            <div id="auth-status" class="auth-status"></div>
+        </div>
+    </div>
+
+    <!-- ========== 主系统 ========== -->
+    <div id="main-system" class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1><i class="fas fa-user-shield"></i> CPMCY- CPM账号克隆工具</h1>
+            <p class="subtitle">快手Jack制作 | CPM账号克隆工具</p>
+            <div class="user-info">
+                <span id="current-user">用户</span> | 
+                <span id="user-type">类型</span> | 
+                <span id="key-type-display">密钥</span>
+                <button id="logout-btn" class="btn btn-sm btn-secondary" style="margin-left: 15px;">
+                    <i class="fas fa-sign-out-alt"></i> 退出系统
+                </button>
+            </div>
+        </header>
+
+        <!-- 标签页导航 - 管理员专用 -->
+        <div class="tabs" id="admin-tabs">
+            <button class="tab-btn" data-tab="keys">
+                <i class="fas fa-key"></i> 密钥管理
+            </button>
+            <button class="tab-btn" data-tab="users">
+                <i class="fas fa-users"></i> 用户管理
+            </button>
+            <button class="tab-btn active" data-tab="clone">
+                <i class="fas fa-clone"></i> 克隆工具
+            </button>
+            <button class="tab-btn" data-tab="logs">
+                <i class="fas fa-history"></i> 操作日志
+            </button>
+        </div>
+
+        <!-- ========== 密钥管理页面（管理员专用） ========== -->
+        <div id="keys-tab" class="tab-content">
+            <!-- 添加密钥卡 -->
+            <div class="card">
+                <h2><i class="fas fa-plus-circle"></i> 生成密钥</h2>
+                
+                <div class="form-group">
+                    <label>密钥类型</label>
+                    <select id="key-type">
+                        <option value="hour">小时卡（1小时有效）</option>
+                        <option value="full">全功能卡</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-days">有效天数（仅全功能卡）</label>
+                    <input type="number" id="key-days" min="1" max="365" value="30">
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-note">备注信息</label>
+                    <input type="text" id="key-note" placeholder="可选的备注信息">
+                </div>
+                
+                <button id="generate-key-btn" class="btn btn-primary">
+                    <i class="fas fa-key"></i> 生成密钥
+                </button>
+            </div>
+
+            <!-- 密钥列表 -->
+            <div class="card">
+                <h2><i class="fas fa-list"></i> 密钥列表</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>密钥</th>
+                                <th>类型</th>
+                                <th>有效期</th>
+                                <th>绑定状态</th>
+                                <th>绑定用户</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-table-body">
+                            <!-- 密钥数据动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 用户管理页面（管理员专用） ========== -->
+        <div id="users-tab" class="tab-content">
+            <!-- 用户列表 -->
+            <div class="card">
+                <h2><i class="fas fa-users"></i> 用户管理</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>密钥</th>
+                                <th>密钥类型</th>
+                                <th>注册时间</th>
+                                <th>最后登录</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- 用户数据动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 克隆工具页面（所有用户都能看到） ========== -->
+        <div id="clone-tab" class="tab-content active">
+            <div class="card hidden" id="account-info-section">
+                <h2><i class="fas fa-user-circle"></i> 当前账号信息</h2>
+                <div class="account-details">
+                    <div class="info-row">
+                        <span class="info-label">账号昵称:</span>
+                        <span class="info-value" id="account-name">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">游戏金币:</span>
+                        <span class="info-value" id="account-money">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">车辆数量:</span>
+                        <span class="info-value" id="account-cars">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Local ID:</span>
+                        <span class="info-value" id="account-localid">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">账号状态:</span>
+                        <span class="info-value status-badge" id="account-status">未登录</span>
+                    </div>
+                </div>
+                <button id="logout-btn-clone" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </button>
+            </div>
+
+            <div class="card" id="login-section">
+                <h2><i class="fas fa-sign-in-alt"></i> 第一步：源账号登录</h2>
+                <p class="info-text">请登录要被克隆的源账号（你的主账号）</p>
+                <div class="form-group">
+                    <label for="source-email">邮箱地址</label>
+                    <input type="email" id="source-email" placeholder="输入CPM账号邮箱" required>
+                </div>
+                <div class="form-group">
+                    <label for="source-password">密码</label>
+                    <input type="password" id="source-password" placeholder="输入CPM账号密码" required>
+                </div>
+                <button id="login-btn" class="btn btn-primary">
+                    <i class="fas fa-key"></i> 登录并验证账号
+                </button>
+                <div id="login-status" class="status"></div>
+            </div>
+
+            <div class="card hidden" id="clone-section">
+                <h2><i class="fas fa-clone"></i> 第二步：选择操作类型</h2>
+                
+                <div class="form-group">
+                    <label for="operation-type">选择操作类型</label>
+                    <div class="operation-options">
+                        <div class="option-item">
+                            <input type="radio" id="op-type1" name="operation-type" value="modify-id" checked>
+                            <label for="op-type1">
+                                <strong>选项1：修改当前账号ID</strong><br>
+                                <small>仅修改当前登录账号的Local ID，其他数据不变</small>
+                            </label>
+                        </div>
+                        <div class="option-item">
+                            <input type="radio" id="op-type2" name="operation-type" value="clone-to-new">
+                            <label for="op-type2">
+                                <strong>选项2：克隆到新账号</strong><br>
+                                <small>复制当前账号所有数据到另一个账号（覆盖目标账号）</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="custom-id-group">
+                    <label for="custom-localid">自定义新的Local ID</label>
+                    <input type="text" id="custom-localid" placeholder="输入新的Local ID（字母数字，建议10-20位）" required>
+                </div>
+                
+                <div id="target-credentials" class="hidden">
+                    <div class="form-group">
+                        <label for="target-email">目标账号邮箱</label>
+                        <input type="email" id="target-email" placeholder="输入目标账号邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label for="target-password">目标账号密码</label>
+                        <input type="password" id="target-password" placeholder="输入目标账号密码">
+                    </div>
+                </div>
+                
+                <div class="warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>警告：</strong> 这将覆盖目标账号的所有数据！请谨慎操作！
+                </div>
+                
+                <div class="warning" style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.15)); border-color: rgba(245,158,11,0.4); color: #f59e0b;">
+                    <i class="fas fa-clock"></i>
+                    <strong>注意：</strong> 克隆过程可能需要2-5分钟，请勿关闭页面！
+                </div>
+                
+                <button id="clone-btn" class="btn btn-danger">
+                    <i class="fas fa-clone"></i> 开始克隆
+                </button>
+                <div id="clone-status" class="status"></div>
+            </div>
+
+            <div class="card" id="status-section">
+                <h2><i class="fas fa-info-circle"></i> 克隆进度状态</h2>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                    <div class="progress-text" id="progress-text">准备开始</div>
+                </div>
+                <div class="time-estimate" id="time-estimate">预计时间: --</div>
+                <div class="status-log" id="status-log">
+                    <div class="log-entry"><i class="fas fa-info-circle"></i> 系统已就绪，请先登录源账号</div>
+                </div>
+            </div>
+
+            <div class="card instructions">
+                <h2><i class="fas fa-question-circle"></i> 使用说明</h2>
+                <ol>
+                    <li>使用<b>源账号</b>（你要克隆的主账号）登录</li>
+                    <li>系统会显示账号的详细信息</li>
+                    <li>选择操作类型：修改当前账号ID 或 克隆到新账号</li>
+                    <li>输入自定义Local ID</li>
+                    <li>如选择克隆到新账号，输入目标账号凭据</li>
+                    <li><b>重要：</b>克隆过程中不要关闭浏览器！</li>
+                </ol>
+                <div class="warning" style="background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(21,128,61,0.15)); border-color: rgba(34,197,94,0.4); color: #22c55e;">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>提示：</strong> 克隆时间取决于车辆数量，通常需要2-5分钟。
+                </div>
+                <div class="author-info">
+                    <i class="fas fa-user-tie"></i> 开发者：快手Jack
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 操作日志页面（管理员专用） ========== -->
+        <div id="logs-tab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> 系统操作日志</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>用户</th>
+                                <th>操作类型</th>
+                                <th>操作内容</th>
+                                <th>IP地址</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-table-body">
+                            <!-- 日志数据动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>CPMCY 账号克隆工具 v6.0 | 快手Jack制作</p>
+            <p class="disclaimer">仅供学习交流使用，请勿用于非法用途。使用本工具造成的任何问题，作者概不负责。</p>
+        </footer>
+    </div>
+
+    <!-- ========== 前端验证系统JavaScript ========== -->
+    <script>
+        // ========== 修复的验证系统 ==========
+        const API_BASE_URL = window.location.origin;
+        console.log('🎯 CPMCY 系统启动，API地址:', API_BASE_URL);
+        
+        // 管理员密钥（必须与后端一致）
+        const ADMIN_KEY = 'Liew1201';
+
+        // 内存数据库（仅用于前端管理界面）
+        let keysDatabase = [];
+        let usersDatabase = [];
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOM加载完成');
+            
+            // 检查是否已登录
+            const savedUser = localStorage.getItem('cpmcy_current_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    if (user.verified) {
+                        console.log('🔑 发现已登录用户:', user.username);
+                        showMainSystem(user);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('❌ 解析用户数据失败:', e);
+                }
+            }
+            
+            // 绑定验证按钮
+            const verifyBtn = document.getElementById('verify-btn');
+            if (verifyBtn) {
+                verifyBtn.addEventListener('click', verifyAndBindKey);
+                console.log('✅ 验证按钮事件绑定成功');
+            } else {
+                console.error('❌ 找不到验证按钮！');
+            }
+            
+            // 绑定Enter键
+            const accessKeyInput = document.getElementById('access-key');
+            if (accessKeyInput) {
+                accessKeyInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        verifyAndBindKey();
+                    }
+                });
+            }
+        });
+
+        // 验证并绑定密钥
+        async function verifyAndBindKey() {
+            console.log('🟢 验证按钮被点击！');
+            
+            const key = document.getElementById('access-key').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const authStatus = document.getElementById('auth-status');
+            
+            if (!key || !username) {
+                authStatus.textContent = '请填写密钥和用户名';
+                authStatus.style.display = 'block';
+                return;
+            }
+            
+            const verifyBtn = document.getElementById('verify-btn');
+            const originalText = verifyBtn.innerHTML;
+            verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 验证中...';
+            verifyBtn.disabled = true;
+            
+            try {
+                console.log('📡 发送验证请求到服务器...');
+                
+                // 构建请求数据
+                const requestData = {
+                    accessKey: key,
+                    username: username
+                };
+                
+                // 如果是新用户注册，添加额外信息
+                const emailInput = document.getElementById('user-email');
+                const passwordInput = document.getElementById('user-password');
+                
+                if (emailInput && passwordInput && 
+                    emailInput.style.display !== 'none' && 
+                    passwordInput.style.display !== 'none') {
+                    requestData.email = emailInput.value.trim();
+                    requestData.password = passwordInput.value.trim();
+                }
+                
+                // 发送验证请求
+                const response = await fetch(API_BASE_URL + '/api/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                console.log('✅ 服务器响应:', data);
+                
+                if (data.success) {
+                    // 验证成功
+                    authStatus.textContent = data.message;
+                    authStatus.className = 'auth-status success';
+                    authStatus.style.display = 'block';
+                    
+                    // 保存用户信息
+                    const userInfo = {
+                        username: username,
+                        userType: data.userType,
+                        cardType: data.cardType,
+                        key: key,
+                        verified: true,
+                        email: data.email || ''
+                    };
+                    
+                    localStorage.setItem('cpmcy_current_user', JSON.stringify(userInfo));
+                    
+                    // 延迟显示主系统
+                    setTimeout(() => {
+                        showMainSystem(userInfo);
+                    }, 1000);
+                    
+                } else if (data.requireRegister) {
+                    // 需要注册
+                    authStatus.textContent = data.message;
+                    authStatus.style.display = 'block';
+                    
+                    // 显示注册字段
+                    document.getElementById('register-fields').style.display = 'block';
+                    document.getElementById('password-fields').style.display = 'block';
+                    document.getElementById('verify-btn').textContent = '注册并绑定';
+                    
+                } else {
+                    // 验证失败
+                    authStatus.textContent = data.message;
+                    authStatus.style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('❌ 验证错误:', error);
+                authStatus.textContent = '网络错误，请检查连接';
+                authStatus.style.display = 'block';
+                
+            } finally {
+                verifyBtn.innerHTML = originalText;
+                verifyBtn.disabled = false;
+            }
+        }
+
+        // 显示主系统
+        function showMainSystem(userInfo) {
+            console.log('🚀 显示主系统，用户信息:', userInfo);
+            
+            // 隐藏验证页面
+            document.getElementById('auth-page').style.display = 'none';
+            
+            // 显示主系统
+            document.getElementById('main-system').style.display = 'block';
+            
+            // 显示用户信息
+            document.getElementById('current-user').textContent = userInfo.username;
+            
+            let userTypeText = '用户';
+            if (userInfo.userType === 'admin') {
+                userTypeText = '管理员';
+                document.getElementById('admin-tabs').style.display = 'flex';
+                initAdminSystem();
+            } else {
+                userTypeText = userInfo.cardType === 'full' ? '全功能用户' : '小时卡用户';
+                document.getElementById('admin-tabs').style.display = 'none';
+                initUserSystem(userInfo);
+            }
+            
+            document.getElementById('user-type').textContent = userTypeText;
+            document.getElementById('key-type-display').textContent = 
+                userInfo.cardType === 'full' ? '全功能卡' : 
+                userInfo.cardType === 'admin' ? '管理员' : '小时卡';
+            
+            // 绑定退出系统按钮
+            const logoutBtn = document.getElementById('logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function() {
+                    if (confirm('确定要退出系统吗？')) {
+                        localStorage.removeItem('cpmcy_current_user');
+                        location.reload();
+                    }
+                });
+            }
+        }
+
+        // ========== 管理员系统 ==========
+        function initAdminSystem() {
+            console.log('👑 初始化管理员系统');
+            
+            // 初始化标签页
+            initTabs();
+            
+            // 初始化密钥管理
+            initKeyManagement();
+            
+            // 初始化用户管理
+            initUserManagement();
+            
+            // 初始化日志
+            initLogs();
+        }
+
+        function initTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // 隐藏所有内容
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // 显示活动标签页
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                activeTab.style.display = 'block';
+            }
+            
+            // 绑定标签页点击事件
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 更新按钮状态
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示对应内容
+                    tabContents.forEach(content => {
+                        content.style.display = 'none';
+                        content.classList.remove('active');
+                        if (content.id === tabId + '-tab') {
+                            content.style.display = 'block';
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        function initKeyManagement() {
+            console.log('🔑 初始化密钥管理');
+            
+            // 生成密钥按钮
+            const generateBtn = document.getElementById('generate-key-btn');
+            if (generateBtn) {
+                generateBtn.addEventListener('click', async function() {
+                    const keyType = document.getElementById('key-type').value;
+                    const days = document.getElementById('key-days').value;
+                    const note = document.getElementById('key-note').value;
+                    
+                    if (keyType === 'full' && (!days || days < 1)) {
+                        alert('请输入有效天数');
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(API_BASE_URL + '/api/keys/generate', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                keyType: keyType,
+                                days: days,
+                                note: note
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            alert(`生成成功！\n密钥: ${data.key}\n类型: ${keyType === 'hour' ? '小时卡' : '全功能卡'}\n有效期: ${data.days}`);
+                            
+                            // 清空表单
+                            document.getElementById('key-days').value = '30';
+                            document.getElementById('key-note').value = '';
+                            
+                            // 重新加载密钥列表
+                            loadKeysData();
+                        } else {
+                            alert('生成失败: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('生成密钥错误:', error);
+                        alert('生成失败，请检查网络连接');
+                    }
+                });
+            }
+            
+            // 加载密钥数据
+            loadKeysData();
+        }
+
+        async function loadKeysData() {
+            try {
+                const response = await fetch(API_BASE_URL + '/api/keys');
+                const data = await response.json();
+                
+                if (data.success) {
+                    keysDatabase = data.keys;
+                    const tbody = document.getElementById('keys-table-body');
+                    tbody.innerHTML = '';
+                    
+                    keysDatabase.forEach(key => {
+                        const tr = document.createElement('tr');
+                        
+                        let statusClass, statusText;
+                        if (key.status === 'used') {
+                            statusClass = 'status-used';
+                            statusText = '已绑定';
+                        } else {
+                            statusClass = 'status-active';
+                            statusText = '未使用';
+                        }
+                        
+                        tr.innerHTML = `
+                            <td><code>${key.key}</code></td>
+                            <td>${key.type === 'hour' ? '小时卡' : '全功能卡'}</td>
+                            <td>${key.days}</td>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>${key.boundUser || '--'}</td>
+                            <td>${key.created}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary copy-btn" data-key="${key.key}"><i class="fas fa-copy"></i> 复制</button>
+                                <button class="btn btn-sm btn-danger delete-key-btn" data-key="${key.key}"><i class="fas fa-trash"></i> 删除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    // 绑定复制按钮
+                    document.querySelectorAll('.copy-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const key = this.getAttribute('data-key');
+                            navigator.clipboard.writeText(key);
+                            alert('已复制密钥: ' + key);
+                        });
+                    });
+                    
+                    // 绑定删除按钮
+                    document.querySelectorAll('.delete-key-btn').forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const key = this.getAttribute('data-key');
+                            if (confirm(`确定要删除密钥 ${key} 吗？`)) {
+                                try {
+                                    const response = await fetch(API_BASE_URL + '/api/keys/' + key, {
+                                        method: 'DELETE'
+                                    });
+                                    
+                                    const data = await response.json();
+                                    if (data.success) {
+                                        loadKeysData();
+                                        loadUsersData();
+                                    } else {
+                                        alert('删除失败: ' + data.message);
+                                    }
+                                } catch (error) {
+                                    console.error('删除密钥错误:', error);
+                                    alert('删除失败，请检查网络连接');
+                                }
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('加载密钥数据错误:', error);
+            }
+        }
+
+        function initUserManagement() {
+            console.log('👥 初始化用户管理');
+            loadUsersData();
+        }
+
+        async function loadUsersData() {
+            try {
+                const response = await fetch(API_BASE_URL + '/api/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    usersDatabase = data.users;
+                    const tbody = document.getElementById('users-table-body');
+                    tbody.innerHTML = '';
+                    
+                    usersDatabase.forEach(user => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td><code>${user.key}</code></td>
+                            <td>${user.cardType === 'full' ? '全功能卡' : '小时卡'}</td>
+                            <td>${new Date(user.created).toLocaleDateString()}</td>
+                            <td>${new Date(user.lastLogin).toLocaleString()}</td>
+                            <td><span class="status-badge status-active">在线</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-danger delete-user-btn" data-username="${user.username}"><i class="fas fa-trash"></i> 删除</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                    
+                    // 绑定删除用户按钮
+                    document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const username = this.getAttribute('data-username');
+                            if (confirm(`确定要删除用户 ${username} 吗？`)) {
+                                // 这里需要后端支持用户删除API
+                                alert('用户删除功能需要后端支持');
+                            }
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('加载用户数据错误:', error);
+            }
+        }
+
+        function initLogs() {
+            console.log('📜 初始化日志系统');
+            loadLogsData();
+        }
+
+        async function loadLogsData() {
+            try {
+                const response = await fetch(API_BASE_URL + '/api/logs');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const tbody = document.getElementById('logs-table-body');
+                    tbody.innerHTML = '';
+                    
+                    data.logs.forEach(log => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${log.time}</td>
+                            <td>${log.user}</td>
+                            <td>${log.action}</td>
+                            <td>${log.content}</td>
+                            <td>${log.ip}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+            } catch (error) {
+                console.error('加载日志数据错误:', error);
+            }
+        }
+
+        // ========== 用户系统 ==========
+        function initUserSystem(userInfo) {
+            console.log('👤 初始化用户系统');
+            
+            // 直接显示克隆工具
+            const cloneTab = document.getElementById('clone-tab');
+            if (cloneTab) {
+                cloneTab.style.display = 'block';
+            }
+            
+            // 根据卡类型限制功能
+            if (userInfo.cardType === 'hour') {
+                // 小时卡用户只能使用选项1（修改ID）
+                const option2Radio = document.getElementById('op-type2');
+                const label2 = document.querySelector('label[for="op-type2"]');
+                
+                if (option2Radio) {
+                    option2Radio.disabled = true;
+                    option2Radio.checked = false;
+                    document.getElementById('op-type1').checked = true;
+                }
+                
+                if (label2) {
+                    label2.style.opacity = '0.5';
+                    label2.style.cursor = 'not-allowed';
+                    const smallText = label2.querySelector('small');
+                    if (smallText) {
+                        smallText.textContent = '（小时卡用户无法使用此功能）';
+                    }
+                }
+                
+                console.log('⏰ 小时卡用户，仅可使用修改ID功能');
+            }
+            
+            // 等待app.js初始化
+            setTimeout(() => {
+                if (window.cpmcyCloneApp) {
+                    window.cpmcyCloneApp.init(userInfo);
+                }
+            }, 100);
+        }
+    </script>
+
+    <!-- ========== 在底部放上app.js ========== -->
+    <script src="app.js"></script>
+</body>
+</html>
