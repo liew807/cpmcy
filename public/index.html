@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPMCY - 克隆工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="author" content="快手Jack">
+    
+    <style>
+        /* ========== 验证页面样式 ========== */
+        #auth-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, 
+                #ff9a9e 0%, 
+                #fad0c4 50%, 
+                #a18cd1 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            animation: bgGradient 8s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        @keyframes bgGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .auth-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 50px 40px;
+            width: 90%;
+            max-width: 500px;
+            border: 4px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 
+                0 15px 35px rgba(255, 105, 180, 0.4),
+                0 0 50px rgba(147, 112, 219, 0.3),
+                inset 0 0 30px rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: linear-gradient(45deg, 
+                #ff6bcb, #ffa8b8, #ffb8e2, #a29bfe, #6c5ce7);
+            border-radius: 28px;
+            z-index: -1;
+            animation: borderGlow 4s linear infinite;
+            background-size: 400% 400%;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .auth-header h1 {
+            background: linear-gradient(135deg, #ff6bcb 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            text-shadow: 
+                0 5px 15px rgba(108, 92, 231, 0.2),
+                0 2px 5px rgba(255, 107, 203, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .auth-header h1 i {
+            background: linear-gradient(135deg, #ff6bcb 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 3px 5px rgba(108, 92, 231, 0.3));
+        }
+
+        .auth-header p {
+            color: #7b68ee;
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-form {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: #7b68ee;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #ffb8e2;
+            border-radius: 15px;
+            font-size: 1rem;
+            color: #6c5ce7;
+            transition: all 0.3s ease;
+            font-family: 'Arial Rounded MT Bold', sans-serif;
+            box-shadow: 
+                inset 0 2px 5px rgba(0, 0, 0, 0.1),
+                0 3px 10px rgba(255, 184, 226, 0.3);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff6bcb;
+            box-shadow: 
+                0 0 25px rgba(255, 107, 203, 0.6),
+                inset 0 0 15px rgba(255, 107, 203, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-group input::placeholder {
+            color: #a29bfe;
+            opacity: 0.7;
+        }
+
+        .auth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px 35px;
+            background: linear-gradient(135deg, 
+                #ff6bcb 0%, 
+                #ffa8b8 50%, 
+                #ff6bcb 100%);
+            background-size: 200% 200%;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            font-family: 'Comic Sans MS', cursive;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            animation: buttonShine 3s ease infinite;
+            box-shadow: 
+                0 8px 20px rgba(255, 107, 203, 0.5),
+                0 0 30px rgba(108, 92, 231, 0.3);
+        }
+
+        @keyframes buttonShine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 
+                0 15px 30px rgba(255, 107, 203, 0.7),
+                0 0 40px rgba(108, 92, 231, 0.4);
+        }
+
+        .auth-btn i {
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .auth-status {
+            padding: 15px;
+            border-radius: 15px;
+            margin-top: 20px;
+            font-weight: 500;
+            display: none;
+            background: rgba(255, 107, 203, 0.1);
+            border: 2px solid rgba(255, 107, 203, 0.3);
+            color: #ff6bcb;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .auth-status.success {
+            background: rgba(111, 231, 219, 0.1);
+            border-color: rgba(111, 231, 219, 0.3);
+            color: #6fe7db;
+            display: block;
+        }
+
+        /* ========== 主系统样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive;
+            background: linear-gradient(135deg, 
+                #ffcce6 0%, 
+                #d4bfff 50%, 
+                #b5e8ff 100%);
+            min-height: 100vh;
+            color: #6c5ce7;
+            line-height: 1.6;
+            padding: 20px;
+            position: relative;
+            animation: bgGradient 8s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 182, 226, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(180, 206, 255, 0.2) 0%, transparent 20%),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 20%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        #main-system {
+            display: none;
+        }
+
+        /* 头部样式 */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 35px 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 4px solid transparent;
+            background-clip: padding-box;
+            box-shadow: 
+                0 20px 40px rgba(255, 107, 203, 0.3),
+                inset 0 0 40px rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: linear-gradient(45deg, 
+                #ff6bcb, #ffa8b8, #ffb8e2, #a29bfe, #6c5ce7);
+            border-radius: 34px;
+            z-index: -1;
+            animation: borderGlow 4s linear infinite;
+            background-size: 400% 400%;
+        }
+
+        .header h1 {
+            background: linear-gradient(135deg, #ff6bcb 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 3.2rem;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 5px 15px rgba(108, 92, 231, 0.2),
+                0 2px 5px rgba(255, 107, 203, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .header h1 i {
+            background: linear-gradient(135deg, #ff6bcb 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 4px 8px rgba(108, 92, 231, 0.3));
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        .subtitle {
+            color: #7b68ee;
+            font-size: 1.4rem;
+            font-weight: 500;
+            opacity: 0.9;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .user-info {
+            margin-top: 20px;
+            color: #6c5ce7;
+            font-size: 1.1rem;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 203, 0.2) 0%, 
+                rgba(108, 92, 231, 0.2) 100%);
+            border-radius: 50px;
+            display: inline-block;
+            border: 2px solid rgba(255, 107, 203, 0.4);
+            backdrop-filter: blur(5px);
+            font-weight: 600;
+        }
+
+        /* 标签页导航 */
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            padding: 15px;
+            margin-bottom: 30px;
+            border: 3px solid #ffb8e2;
+            box-shadow: 
+                0 10px 30px rgba(255, 107, 203, 0.25),
+                inset 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .tabs.user-view {
+            display: none;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 18px 25px;
+            background: transparent;
+            border: none;
+            color: #a29bfe;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: 'Comic Sans MS', cursive;
+        }
+
+        .tab-btn:hover {
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 203, 0.1) 0%, 
+                rgba(108, 92, 231, 0.1) 100%);
+            transform: translateY(-3px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, 
+                #ff6bcb 0%, 
+                #6c5ce7 100%);
+            color: white;
+            box-shadow: 
+                0 8px 20px rgba(108, 92, 231, 0.4),
+                0 0 25px rgba(255, 107, 203, 0.3);
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 35px 30px;
+            margin-bottom: 30px;
+            border: 3px solid #ffb8e2;
+            box-shadow: 
+                0 15px 35px rgba(255, 107, 203, 0.25),
+                inset 0 0 25px rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, 
+                #ff6bcb 0%, 
+                #ffa8b8 33%, 
+                #a29bfe 66%, 
+                #6c5ce7 100%);
+            background-size: 200% 100%;
+            animation: borderFlow 3s linear infinite;
+        }
+
+        @keyframes borderFlow {
+            0% { background-position: 200% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.01);
+            box-shadow: 
+                0 25px 50px rgba(255, 107, 203, 0.4),
+                0 0 60px rgba(108, 92, 231, 0.3);
+        }
+
+        .card h2 {
+            background: linear-gradient(135deg, #ff6bcb 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid rgba(255, 184, 226, 0.5);
+            text-shadow: 0 3px 10px rgba(108, 92, 231, 0.2);
+        }
+
+        .card h2 i {
+            background: linear-gradient(135deg, #ff6bcb 0%, #6c5ce7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 3px 6px rgba(108, 92, 231, 0.3));
+            animation: iconFloat 2.5s ease-in-out infinite;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', cursive;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px) scale(1.05);
+        }
+
+        .btn i {
+            font-size: 1.4rem;
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, 
+                #ff6bcb 0%, 
+                #ffa8b8 50%, 
+                #ff6bcb 100%);
+            background-size: 200% 200%;
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(255, 107, 203, 0.6),
+                0 0 35px rgba(108, 92, 231, 0.4);
+            animation: buttonShine 3s ease infinite;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, 
+                #a29bfe 0%, 
+                #6c5ce7 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(162, 155, 254, 0.6),
+                0 0 35px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, 
+                #ff7675 0%, 
+                #fd79a8 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(255, 118, 117, 0.6),
+                0 0 35px rgba(253, 121, 168, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, 
+                #00cec9 0%, 
+                #81ecec 100%);
+            color: white;
+            box-shadow: 
+                0 10px 25px rgba(0, 206, 201, 0.6),
+                0 0 35px rgba(129, 236, 236, 0.4);
+        }
+
+        .btn-sm {
+            padding: 12px 25px;
+            font-size: 1rem;
+            gap: 10px;
+            border-radius: 15px;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #6c5ce7;
+            font-weight: 600;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 18px 22px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #ffb8e2;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            color: #6c5ce7;
+            transition: all 0.3s ease;
+            font-family: 'Comic Sans MS', cursive;
+            box-shadow: 
+                inset 0 2px 5px rgba(0, 0, 0, 0.1),
+                0 5px 15px rgba(255, 184, 226, 0.3);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #ff6bcb;
+            box-shadow: 
+                0 0 30px rgba(255, 107, 203, 0.7),
+                inset 0 0 20px rgba(255, 107, 203, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .form-group input::placeholder {
+            color: #a29bfe;
+            opacity: 0.7;
+        }
+
+        /* 表格样式 */
+        .table-container {
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            border: 3px solid #ffb8e2;
+            box-shadow: 
+                inset 0 0 25px rgba(255, 255, 255, 0.8),
+                0 10px 25px rgba(255, 107, 203, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 18px 22px;
+            text-align: left;
+            border-bottom: 2px solid rgba(255, 184, 226, 0.3);
+            color: #6c5ce7;
+        }
+
+        th {
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 203, 0.2) 0%, 
+                rgba(108, 92, 231, 0.2) 100%);
+            color: #6c5ce7;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 1rem;
+        }
+
+        tr:hover {
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 203, 0.1) 0%, 
+                rgba(108, 92, 231, 0.1) 100%);
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, 
+                rgba(0, 206, 201, 0.2) 0%, 
+                rgba(129, 236, 236, 0.2) 100%);
+            color: #00cec9;
+            border: 2px solid rgba(0, 206, 201, 0.4);
+        }
+
+        .status-inactive {
+            background: linear-gradient(135deg, 
+                rgba(255, 118, 117, 0.2) 0%, 
+                rgba(253, 121, 168, 0.2) 100%);
+            color: #ff7675;
+            border: 2px solid rgba(255, 118, 117, 0.4);
+        }
+
+        .status-used {
+            background: linear-gradient(135deg, 
+                rgba(253, 203, 110, 0.2) 0%, 
+                rgba(255, 159, 67, 0.2) 100%);
+            color: #fdca6e;
+            border: 2px solid rgba(253, 203, 110, 0.4);
+        }
+
+        /* 克隆工具样式 */
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.8) 0%, 
+                rgba(255, 248, 251, 0.8) 100%);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 6px solid #ff6bcb;
+            margin-bottom: 15px;
+            box-shadow: 
+                0 5px 15px rgba(255, 107, 203, 0.15),
+                inset 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        .info-label {
+            display: block;
+            color: #a29bfe;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            display: block;
+            color: #6c5ce7;
+            font-size: 1.3rem;
+            font-weight: 800;
+            text-shadow: 0 2px 5px rgba(108, 92, 231, 0.2);
+        }
+
+        .warning {
+            background: linear-gradient(135deg, 
+                rgba(255, 118, 117, 0.15), 
+                rgba(253, 121, 168, 0.15));
+            border: 3px solid rgba(255, 118, 117, 0.4);
+            color: #ff7675;
+            padding: 22px;
+            border-radius: 20px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 
+                0 8px 25px rgba(255, 118, 117, 0.2),
+                inset 0 0 15px rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .warning i {
+            animation: iconFloat 2s ease-in-out infinite;
+        }
+
+        .progress-container {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(255, 248, 251, 0.9) 100%);
+            border-radius: 20px;
+            height: 30px;
+            overflow: hidden;
+            margin: 25px 0;
+            position: relative;
+            border: 3px solid #ffb8e2;
+            box-shadow: 
+                inset 0 0 15px rgba(255, 255, 255, 0.8),
+                0 5px 15px rgba(255, 107, 203, 0.2);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, 
+                #ff6bcb 0%, 
+                #ffa8b8 50%, 
+                #ff6bcb 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            position: relative;
+            background-size: 200% 100%;
+            animation: progressGlow 2s linear infinite;
+        }
+
+        @keyframes progressGlow {
+            0% { background-position: 200% 0; }
+            100% { background-position: 0 0; }
+        }
+
+        /* 操作选项 */
+        .operation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .option-item {
+            position: relative;
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .option-item label {
+            display: block;
+            padding: 25px;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.8) 0%, 
+                rgba(255, 248, 251, 0.8) 100%);
+            border: 3px solid rgba(255, 184, 226, 0.4);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #a29bfe;
+            font-family: 'Comic Sans MS', cursive;
+            box-shadow: 
+                0 5px 15px rgba(255, 107, 203, 0.15),
+                inset 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        .option-item input[type="radio"]:checked + label {
+            background: linear-gradient(135deg, 
+                rgba(255, 107, 203, 0.1) 0%, 
+                rgba(108, 92, 231, 0.1) 100%);
+            border-color: #ff6bcb;
+            box-shadow: 
+                0 10px 25px rgba(255, 107, 203, 0.4),
+                inset 0 0 20px rgba(255, 107, 203, 0.1);
+            color: #6c5ce7;
+            transform: translateY(-5px);
+        }
+
+        .time-estimate {
+            text-align: center;
+            color: #a29bfe;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .status-log {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9) 0%, 
+                rgba(255, 248, 251, 0.9) 100%);
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 3px solid #ffb8e2;
+            box-shadow: 
+                inset 0 0 20px rgba(255, 255, 255, 0.8),
+                0 5px 15px rgba(255, 107, 203, 0.2);
+        }
+
+        .log-entry {
+            padding: 12px 15px;
+            border-bottom: 2px solid rgba(255, 184, 226, 0.3);
+            color: #6c5ce7;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .author-info {
+            background: linear-gradient(135deg, 
+                rgba(162, 155, 254, 0.2), 
+                rgba(108, 92, 231, 0.2));
+            border: 3px solid rgba(162, 155, 254, 0.4);
+            color: #6c5ce7;
+            padding: 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-top: 25px;
+            box-shadow: 
+                0 8px 25px rgba(108, 92, 231, 0.2),
+                inset 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        .author-info i {
+            animation: iconFloat 2.5s ease-in-out infinite;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 页脚 */
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #6c5ce7;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            font-weight: 500;
+        }
+
+        .disclaimer {
+            font-size: 0.8rem;
+            color: #a29bfe;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .card {
+                padding: 25px 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .tab-btn {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 18px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ========== 验证页面 ========== -->
+    <div id="auth-page">
+        <div class="auth-container">
+            <div class="auth-header">
+                <h1><i class="fas fa-shield-alt"></i> CPMCY 工具</h1>
+                <p>CPM账号克隆工具 | 快手Jack制作</p>
+            </div>
+            
+            <div class="auth-form">
+                <div class="form-group">
+                    <label for="access-key"><i class="fas fa-key"></i> 访问密钥</label>
+                    <input type="text" id="access-key" placeholder="请输入密钥" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> 用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" required>
+                </div>
+                
+                <div class="form-group" id="register-fields" style="display: none;">
+                    <label for="user-email">邮箱地址</label>
+                    <input type="email" id="user-email" placeholder="请输入邮箱地址">
+                </div>
+                
+                <div class="form-group" id="password-fields" style="display: none;">
+                    <label for="user-password">密码</label>
+                    <input type="password" id="user-password" placeholder="请输入密码">
+                </div>
+            </div>
+            
+            <button id="verify-btn" class="auth-btn">
+                <i class="fas fa-lock"></i> 验证密钥
+            </button>
+            
+            <div id="auth-status" class="auth-status"></div>
+        </div>
+    </div>
+
+    <!-- ========== 主系统 ========== -->
+    <div id="main-system" class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1><i class="fas fa-user-shield"></i> CPMCY- CPM账号克隆工具</h1>
+            <p class="subtitle">快手Jack制作 | CPM账号克隆工具</p>
+            <div class="user-info">
+                <span id="current-user">用户</span> | 
+                <span id="user-type">类型</span> | 
+                <span id="key-type-display">密钥</span>
+                <button id="logout-btn" class="btn btn-sm btn-secondary" style="margin-left: 15px;">
+                    <i class="fas fa-sign-out-alt"></i> 退出系统
+                </button>
+            </div>
+        </header>
+
+        <!-- 标签页导航 - 管理员专用 -->
+        <div class="tabs" id="admin-tabs">
+            <button class="tab-btn" data-tab="keys">
+                <i class="fas fa-key"></i> 密钥管理
+            </button>
+            <button class="tab-btn" data-tab="users">
+                <i class="fas fa-users"></i> 用户管理
+            </button>
+            <button class="tab-btn active" data-tab="clone">
+                <i class="fas fa-clone"></i> 克隆工具
+            </button>
+            <button class="tab-btn" data-tab="logs">
+                <i class="fas fa-history"></i> 操作日志
+            </button>
+        </div>
+
+        <!-- ========== 密钥管理页面（管理员专用） ========== -->
+        <div id="keys-tab" class="tab-content">
+            <!-- 添加密钥卡 -->
+            <div class="card">
+                <h2><i class="fas fa-plus-circle"></i> 生成密钥</h2>
+                
+                <div class="form-group">
+                    <label>密钥类型</label>
+                    <select id="key-type">
+                        <option value="hour">小时卡（1小时有效）</option>
+                        <option value="full">全功能卡</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-days">有效天数（仅全功能卡）</label>
+                    <input type="number" id="key-days" min="1" max="365" value="30">
+                </div>
+                
+                <div class="form-group">
+                    <label for="key-note">备注信息</label>
+                    <input type="text" id="key-note" placeholder="可选的备注信息">
+                </div>
+                
+                <button id="generate-key-btn" class="btn btn-primary">
+                    <i class="fas fa-key"></i> 生成密钥
+                </button>
+            </div>
+
+            <!-- 密钥列表 -->
+            <div class="card">
+                <h2><i class="fas fa-list"></i> 密钥列表</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>密钥</th>
+                                <th>类型</th>
+                                <th>有效期</th>
+                                <th>绑定状态</th>
+                                <th>绑定用户</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keys-table-body">
+                            <!-- 密钥数据动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 用户管理页面（管理员专用） ========== -->
+        <div id="users-tab" class="tab-content">
+            <!-- 用户列表 -->
+            <div class="card">
+                <h2><i class="fas fa-users"></i> 用户管理</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>密钥</th>
+                                <th>密钥类型</th>
+                                <th>注册时间</th>
+                                <th>最后登录</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- 用户数据动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 克隆工具页面（所有用户都能看到） ========== -->
+        <div id="clone-tab" class="tab-content active">
+            <div class="card hidden" id="account-info-section">
+                <h2><i class="fas fa-user-circle"></i> 当前账号信息</h2>
+                <div class="account-details">
+                    <div class="info-row">
+                        <span class="info-label">账号昵称:</span>
+                        <span class="info-value" id="account-name">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">游戏金币:</span>
+                        <span class="info-value" id="account-money">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">车辆数量:</span>
+                        <span class="info-value" id="account-cars">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Local ID:</span>
+                        <span class="info-value" id="account-localid">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">账号状态:</span>
+                        <span class="info-value status-badge" id="account-status">未登录</span>
+                    </div>
+                </div>
+                <button id="logout-btn-clone" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </button>
+            </div>
+
+            <div class="card" id="login-section">
+                <h2><i class="fas fa-sign-in-alt"></i> 第一步：源账号登录</h2>
+                <p class="info-text">请登录要被克隆的源账号（你的主账号）</p>
+                <div class="form-group">
+                    <label for="source-email">邮箱地址</label>
+                    <input type="email" id="source-email" placeholder="输入CPM账号邮箱" required>
+                </div>
+                <div class="form-group">
+                    <label for="source-password">密码</label>
+                    <input type="password" id="source-password" placeholder="输入CPM账号密码" required>
+                </div>
+                <button id="login-btn" class="btn btn-primary">
+                    <i class="fas fa-key"></i> 登录并验证账号
+                </button>
+                <div id="login-status" class="status"></div>
+            </div>
+
+            <div class="card hidden" id="clone-section">
+                <h2><i class="fas fa-clone"></i> 第二步：选择操作类型</h2>
+                
+                <div class="form-group">
+                    <label for="operation-type">选择操作类型</label>
+                    <div class="operation-options">
+                        <div class="option-item">
+                            <input type="radio" id="op-type1" name="operation-type" value="modify-id" checked>
+                            <label for="op-type1">
+                                <strong>选项1：修改当前账号ID</strong><br>
+                                <small>仅修改当前登录账号的Local ID，其他数据不变</small>
+                            </label>
+                        </div>
+                        <div class="option-item">
+                            <input type="radio" id="op-type2" name="operation-type" value="clone-to-new">
+                            <label for="op-type2">
+                                <strong>选项2：克隆到新账号</strong><br>
+                                <small>复制当前账号所有数据到另一个账号（覆盖目标账号）</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="custom-id-group">
+                    <label for="custom-localid">自定义新的Local ID</label>
+                    <input type="text" id="custom-localid" placeholder="输入新的Local ID（字母数字，建议10-20位）" required>
+                </div>
+                
+                <div id="target-credentials" class="hidden">
+                    <div class="form-group">
+                        <label for="target-email">目标账号邮箱</label>
+                        <input type="email" id="target-email" placeholder="输入目标账号邮箱">
+                    </div>
+                    <div class="form-group">
+                        <label for="target-password">目标账号密码</label>
+                        <input type="password" id="target-password" placeholder="输入目标账号密码">
+                    </div>
+                </div>
+                
+                <div class="warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>警告：</strong> 这将覆盖目标账号的所有数据！请谨慎操作！
+                </div>
+                
+                <div class="warning" style="background: linear-gradient(135deg, rgba(253, 203, 110, 0.15), rgba(255, 159, 67, 0.15)); border-color: rgba(253, 203, 110, 0.4); color: #fdca6e;">
+                    <i class="fas fa-clock"></i>
+                    <strong>注意：</strong> 克隆过程可能需要2-5分钟，请勿关闭页面！
+                </div>
+                
+                <button id="clone-btn" class="btn btn-danger">
+                    <i class="fas fa-clone"></i> 开始克隆
+                </button>
+                <div id="clone-status" class="status"></div>
+            </div>
+
+            <div class="card" id="status-section">
+                <h2><i class="fas fa-info-circle"></i> 克隆进度状态</h2>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                    <div class="progress-text" id="progress-text">准备开始</div>
+                </div>
+                <div class="time-estimate" id="time-estimate">预计时间: --</div>
+                <div class="status-log" id="status-log">
+                    <div class="log-entry"><i class="fas fa-info-circle"></i> 系统已就绪，请先登录源账号</div>
+                </div>
+            </div>
+
+            <div class="card instructions">
+                <h2><i class="fas fa-question-circle"></i> 使用说明</h2>
+                <ol>
+                    <li>使用<b>源账号</b>（你要克隆的主账号）登录</li>
+                    <li>系统会显示账号的详细信息</li>
+                    <li>选择操作类型：修改当前账号ID 或 克隆到新账号</li>
+                    <li>输入自定义Local ID</li>
+                    <li>如选择克隆到新账号，输入目标账号凭据</li>
+                    <li><b>重要：</b>克隆过程中不要关闭浏览器！</li>
+                </ol>
+                <div class="warning" style="background: linear-gradient(135deg, rgba(0, 206, 201, 0.15), rgba(129, 236, 236, 0.15)); border-color: rgba(0, 206, 201, 0.4); color: #00cec9;">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>提示：</strong> 克隆时间取决于车辆数量，通常需要2-5分钟。
+                </div>
+                <div class="author-info">
+                    <i class="fas fa-user-tie"></i> 开发者：快手Jack
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 操作日志页面（管理员专用） ========== -->
+        <div id="logs-tab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> 系统操作日志</h2>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>用户</th>
+                                <th>操作类型</th>
+                                <th>操作内容</th>
+                                <th>IP地址</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs-table-body">
+                            <!-- 日志数据动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>CPMCY 账号克隆工具 v6.0 | 快手Jack制作</p>
+            <p class="disclaimer">仅供学习交流使用，请勿用于非法用途。使用本工具造成的任何问题，作者概不负责。</p>
+        </footer>
+    </div>
+
+    <script>
+        // ========== 密钥绑定系统 ==========
+        // 模拟数据库
+        let keysDatabase = JSON.parse(localStorage.getItem('cpmcy_keys_db')) || [];
+        let usersDatabase = JSON.parse(localStorage.getItem('cpmcy_users_db')) || [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否已登录
+            const savedUser = localStorage.getItem('cpmcy_current_user');
+            if (savedUser) {
+                try {
+                    const user = JSON.parse(savedUser);
+                    if (user.verified) {
+                        showMainSystem(user);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('解析用户数据失败:', e);
+                }
+            }
+            
+            // 设置验证按钮事件
+            document.getElementById('verify-btn').addEventListener('click', verifyAndBindKey);
+            
+            // 按Enter键验证
+            document.getElementById('access-key').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') verifyAndBindKey();
+            });
+        });
+
+        async function verifyAndBindKey() {
+            const key = document.getElementById('access-key').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const authStatus = document.getElementById('auth-status');
+            
+            if (!key || !username) {
+                authStatus.textContent = '请填写密钥和用户名';
+                return;
+            }
+            
+            // 管理员账号特殊检查
+            if (key === 'CPM-ADMIN-2024' && username === 'admin') {
+                const userInfo = {
+                    username: 'admin',
+                    userType: 'admin',
+                    cardType: 'admin',
+                    key: 'CPM-ADMIN-2024',
+                    verified: true,
+                    email: 'admin@cpmcy.com'
+                };
+                
+                authStatus.textContent = '管理员登录成功！正在进入系统...';
+                authStatus.className = 'auth-status success';
+                
+                localStorage.setItem('cpmcy_current_user', JSON.stringify(userInfo));
+                
+                setTimeout(() => {
+                    showMainSystem(userInfo);
+                }, 1000);
+                return;
+            }
+            
+            const verifyBtn = document.getElementById('verify-btn');
+            const originalText = verifyBtn.innerHTML;
+            verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 验证中...';
+            verifyBtn.disabled = true;
+            
+            try {
+                // 1. 查找密钥
+                const keyData = keysDatabase.find(k => k.key === key);
+                
+                if (!keyData) {
+                    authStatus.textContent = '密钥不存在';
+                    return;
+                }
+                
+                // 2. 检查密钥状态
+                if (keyData.status === 'used') {
+                    // 密钥已绑定，检查是否是绑定用户登录
+                    const existingUser = usersDatabase.find(u => u.username === username && u.key === key);
+                    if (existingUser) {
+                        authStatus.textContent = '登录成功！正在进入系统...';
+                        authStatus.className = 'auth-status success';
+                        
+                        const userInfo = {
+                            username: username,
+                            userType: 'user',
+                            cardType: keyData.type,
+                            key: key,
+                            verified: true,
+                            email: existingUser.email
+                        };
+                        
+                        localStorage.setItem('cpmcy_current_user', JSON.stringify(userInfo));
+                        
+                        setTimeout(() => {
+                            showMainSystem(userInfo);
+                        }, 1000);
+                    } else {
+                        authStatus.textContent = '此密钥已绑定其他账号';
+                        return;
+                    }
+                } else {
+                    // 3. 新用户注册
+                    authStatus.textContent = '新用户注册，请填写完整信息';
+                    
+                    // 显示注册字段
+                    document.getElementById('register-fields').style.display = 'block';
+                    document.getElementById('password-fields').style.display = 'block';
+                    document.getElementById('verify-btn').textContent = '注册并绑定';
+                    
+                    // 修改按钮事件为注册
+                    verifyBtn.removeEventListener('click', verifyAndBindKey);
+                    verifyBtn.addEventListener('click', registerNewUser);
+                }
+                
+            } catch (error) {
+                console.error('验证错误:', error);
+                authStatus.textContent = '系统错误，请重试';
+                
+            } finally {
+                verifyBtn.innerHTML = originalText;
+                verifyBtn.disabled = false;
+            }
+        }
+
+        function registerNewUser() {
+            const key = document.getElementById('access-key').value.trim();
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('user-email').value.trim();
+            const password = document.getElementById('user-password').value.trim();
+            const authStatus = document.getElementById('auth-status');
+            
+            if (!key || !username || !email || !password) {
+                authStatus.textContent = '请填写所有信息';
+                return;
+            }
+            
+            // 检查用户名是否已存在
+            if (usersDatabase.find(u => u.username === username)) {
+                authStatus.textContent = '用户名已存在';
+                return;
+            }
+            
+            // 检查邮箱是否已存在
+            if (usersDatabase.find(u => u.email === email)) {
+                authStatus.textContent = '邮箱已注册';
+                return;
+            }
+            
+            // 查找密钥
+            const keyData = keysDatabase.find(k => k.key === key);
+            if (!keyData || keyData.status === 'used') {
+                authStatus.textContent = '密钥无效或已使用';
+                return;
+            }
+            
+            // 创建新用户
+            const newUser = {
+                username: username,
+                email: email,
+                password: password,
+                key: key,
+                cardType: keyData.type,
+                created: new Date().toISOString(),
+                lastLogin: new Date().toISOString(),
+                status: 'active'
+            };
+            
+            // 更新密钥状态
+            keyData.status = 'used';
+            keyData.boundUser = username;
+            keyData.bindTime = new Date().toISOString();
+            
+            // 保存数据
+            usersDatabase.push(newUser);
+            localStorage.setItem('cpmcy_keys_db', JSON.stringify(keysDatabase));
+            localStorage.setItem('cpmcy_users_db', JSON.stringify(usersDatabase));
+            
+            // 登录用户
+            const userInfo = {
+                username: username,
+                userType: 'user',
+                cardType: keyData.type,
+                key: key,
+                verified: true,
+                email: email
+            };
+            
+            localStorage.setItem('cpmcy_current_user', JSON.stringify(userInfo));
+            
+            authStatus.textContent = '注册成功！正在进入系统...';
+            authStatus.className = 'auth-status success';
+            
+            setTimeout(() => {
+                showMainSystem(userInfo);
+            }, 1000);
+        }
+
+        function showMainSystem(userInfo) {
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('main-system').style.display = 'block';
+            
+            // 显示用户信息
+            document.getElementById('current-user').textContent = userInfo.username;
+            
+            let userTypeText = '用户';
+            if (userInfo.userType === 'admin') {
+                userTypeText = '管理员';
+                document.getElementById('admin-tabs').style.display = 'flex';
+                initAdminSystem();
+            } else {
+                userTypeText = userInfo.cardType === 'full' ? '全功能用户' : '小时卡用户';
+                document.getElementById('admin-tabs').style.display = 'none';
+                initUserSystem(userInfo);
+            }
+            
+            document.getElementById('user-type').textContent = userTypeText;
+            document.getElementById('key-type-display').textContent = userInfo.cardType === 'full' ? '全功能卡' : userInfo.cardType === 'admin' ? '管理员' : '小时卡';
+            
+            // 退出系统按钮
+            document.getElementById('logout-btn').addEventListener('click', function() {
+                if (confirm('确定要退出系统吗？')) {
+                    localStorage.removeItem('cpmcy_current_user');
+                    location.reload();
+                }
+            });
+        }
+
+        // ========== 管理员系统 ==========
+        function initAdminSystem() {
+            initTabs();
+            initKeyManagement();
+            initUserManagement();
+            initLogs();
+        }
+
+        function initTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            const activeTab = document.querySelector('.tab-content.active');
+            if (activeTab) {
+                activeTab.style.display = 'block';
+            }
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    tabContents.forEach(content => {
+                        content.style.display = 'none';
+                        content.classList.remove('active');
+                        if (content.id === tabId + '-tab') {
+                            content.style.display = 'block';
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        function initKeyManagement() {
+            // 生成密钥按钮
+            document.getElementById('generate-key-btn').addEventListener('click', function() {
+                const keyType = document.getElementById('key-type').value;
+                const days = document.getElementById('key-days').value;
+                const note = document.getElementById('key-note').value;
+                
+                if (keyType === 'full' && (!days || days < 1)) {
+                    alert('请输入有效天数');
+                    return;
+                }
+                
+                // 生成唯一密钥
+                const timestamp = Date.now();
+                const randomStr = Math.random().toString(36).substr(2, 8).toUpperCase();
+                let key;
+                if (keyType === 'hour') {
+                    key = `CPM-HOUR-${randomStr}`;
+                } else {
+                    key = `CPM-FULL-${randomStr}`;
+                }
+                
+                // 创建新密钥
+                const newKey = {
+                    key: key,
+                    type: keyType,
+                    days: keyType === 'hour' ? '1小时' : `${days}天`,
+                    status: 'unused',
+                    created: new Date().toLocaleString(),
+                    note: note || '',
+                    bindTime: null,
+                    boundUser: null
+                };
+                
+                // 保存到数据库
+                keysDatabase.push(newKey);
+                localStorage.setItem('cpmcy_keys_db', JSON.stringify(keysDatabase));
+                
+                alert(`生成成功！\n密钥: ${key}\n类型: ${keyType === 'hour' ? '小时卡' : '全功能卡'}\n有效期: ${newKey.days}`);
+                
+                // 清空表单并重新加载
+                document.getElementById('key-days').value = '30';
+                document.getElementById('key-note').value = '';
+                loadKeysData();
+            });
+            
+            loadKeysData();
+        }
+
+        function loadKeysData() {
+            const tbody = document.getElementById('keys-table-body');
+            tbody.innerHTML = '';
+            
+            keysDatabase.forEach(key => {
+                const tr = document.createElement('tr');
+                
+                let statusClass, statusText;
+                if (key.status === 'used') {
+                    statusClass = 'status-used';
+                    statusText = '已绑定';
+                } else {
+                    statusClass = 'status-active';
+                    statusText = '未使用';
+                }
+                
+                tr.innerHTML = `
+                    <td><code>${key.key}</code></td>
+                    <td>${key.type === 'hour' ? '小时卡' : '全功能卡'}</td>
+                    <td>${key.days}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td>${key.boundUser || '--'}</td>
+                    <td>${key.created}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary copy-btn" data-key="${key.key}"><i class="fas fa-copy"></i> 复制</button>
+                        <button class="btn btn-sm btn-danger delete-key-btn" data-key="${key.key}"><i class="fas fa-trash"></i> 删除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // 复制按钮
+            document.querySelectorAll('.copy-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const key = this.getAttribute('data-key');
+                    navigator.clipboard.writeText(key);
+                    alert('已复制密钥: ' + key);
+                });
+            });
+            
+            // 删除按钮
+            document.querySelectorAll('.delete-key-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const key = this.getAttribute('data-key');
+                    if (confirm(`确定要删除密钥 ${key} 吗？`)) {
+                        keysDatabase = keysDatabase.filter(k => k.key !== key);
+                        localStorage.setItem('cpmcy_keys_db', JSON.stringify(keysDatabase));
+                        loadKeysData();
+                    }
+                });
+            });
+        }
+
+        function initUserManagement() {
+            loadUsersData();
+        }
+
+        function loadUsersData() {
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '';
+            
+            usersDatabase.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td><code>${user.key}</code></td>
+                    <td>${user.cardType === 'full' ? '全功能卡' : '小时卡'}</td>
+                    <td>${new Date(user.created).toLocaleDateString()}</td>
+                    <td>${new Date(user.lastLogin).toLocaleString()}</td>
+                    <td><span class="status-badge status-active">在线</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger delete-user-btn" data-username="${user.username}"><i class="fas fa-trash"></i> 删除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            // 删除用户按钮
+            document.querySelectorAll('.delete-user-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const username = this.getAttribute('data-username');
+                    if (confirm(`确定要删除用户 ${username} 吗？`)) {
+                        // 释放绑定的密钥
+                        const user = usersDatabase.find(u => u.username === username);
+                        if (user) {
+                            const key = keysDatabase.find(k => k.key === user.key);
+                            if (key) {
+                                key.status = 'unused';
+                                key.boundUser = null;
+                                key.bindTime = null;
+                            }
+                        }
+                        
+                        usersDatabase = usersDatabase.filter(u => u.username !== username);
+                        localStorage.setItem('cpmcy_users_db', JSON.stringify(usersDatabase));
+                        localStorage.setItem('cpmcy_keys_db', JSON.stringify(keysDatabase));
+                        loadUsersData();
+                        loadKeysData();
+                    }
+                });
+            });
+        }
+
+        function initLogs() {
+            loadLogsData();
+        }
+
+        function loadLogsData() {
+            const tbody = document.getElementById('logs-table-body');
+            tbody.innerHTML = '';
+            
+            // 模拟日志数据
+            const logs = [
+                { time: new Date().toLocaleString(), user: 'admin', action: '生成密钥', content: '生成了密钥 CPM-FULL-NEW123', ip: '192.168.1.100' },
+                { time: new Date(Date.now() - 3600000).toLocaleString(), user: 'user1', action: '注册', content: '新用户注册成功', ip: '192.168.1.101' },
+                { time: new Date(Date.now() - 7200000).toLocaleString(), user: 'admin', action: '查看日志', content: '查看了系统日志', ip: '192.168.1.100' }
+            ];
+            
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${log.time}</td>
+                    <td>${log.user}</td>
+                    <td>${log.action}</td>
+                    <td>${log.content}</td>
+                    <td>${log.ip}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ========== 用户系统 ==========
+        function initUserSystem(userInfo) {
+            // 直接显示克隆工具
+            const cloneTab = document.getElementById('clone-tab');
+            cloneTab.style.display = 'block';
+            
+            // 根据卡类型限制功能
+            if (userInfo.cardType === 'hour') {
+                // 小时卡用户只能使用选项1（修改ID）
+                document.getElementById('op-type2').disabled = true;
+                const label2 = document.querySelector('label[for="op-type2"]');
+                label2.style.opacity = '0.5';
+                label2.style.cursor = 'not-allowed';
+                label2.innerHTML = '<strong>选项2：克隆到新账号</strong><br><small>（小时卡用户无法使用此功能）</small>';
+            }
+            
+            // 克隆工具的原有功能
+            initCloneTool();
+        }
+
+        function initCloneTool() {
+            // 操作类型切换
+            document.querySelectorAll('input[name="operation-type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const targetCredentials = document.getElementById('target-credentials');
+                    if (this.value === 'clone-to-new') {
+                        targetCredentials.classList.remove('hidden');
+                    } else {
+                        targetCredentials.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // 登录按钮
+            document.getElementById('login-btn')?.addEventListener('click', function() {
+                const email = document.getElementById('source-email').value;
+                const password = document.getElementById('source-password').value;
+                
+                if (!email || !password) {
+                    document.getElementById('login-status').textContent = '请填写邮箱和密码';
+                    document.getElementById('login-status').style.color = '#ff7675';
+                    return;
+                }
+                
+                // 显示登录状态
+                document.getElementById('login-status').textContent = '正在登录，请稍候...';
+                document.getElementById('login-status').style.color = '#00cec9';
+                
+                // 模拟加载效果
+                setTimeout(() => {
+                    // 这里将在app.js中实现实际登录逻辑
+                    // 现在只显示界面切换
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('account-info-section').classList.remove('hidden');
+                    document.getElementById('clone-section').classList.remove('hidden');
+                    
+                    // 实际数据将在app.js中填充
+                    document.getElementById('login-status').textContent = '';
+                }, 1000);
+            });
+            
+            // 退出登录按钮
+            document.getElementById('logout-btn-clone')?.addEventListener('click', function() {
+                document.getElementById('login-section').classList.remove('hidden');
+                document.getElementById('account-info-section').classList.add('hidden');
+                document.getElementById('clone-section').classList.add('hidden');
+                document.getElementById('login-status').textContent = '已退出登录';
+            });
+            
+            // 开始克隆按钮
+            document.getElementById('clone-btn')?.addEventListener('click', function() {
+                const operationType = document.querySelector('input[name="operation-type"]:checked').value;
+                const customLocalId = document.getElementById('custom-localid').value;
+                
+                if (!customLocalId) {
+                    document.getElementById('clone-status').textContent = '请输入自定义Local ID';
+                    document.getElementById('clone-status').style.color = '#ff7675';
+                    return;
+                }
+                
+                if (operationType === 'clone-to-new') {
+                    const targetEmail = document.getElementById('target-email').value;
+                    const targetPassword = document.getElementById('target-password').value;
+                    
+                    if (!targetEmail || !targetPassword) {
+                        document.getElementById('clone-status').textContent = '请输入目标账号的邮箱和密码';
+                        document.getElementById('clone-status').style.color = '#ff7675';
+                        return;
+                    }
+                }
+                
+                // 开始克隆过程
+                startCloneProcess(operationType, customLocalId);
+            });
+        }
+
+        function startCloneProcess(operationType, customLocalId) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            const cloneStatus = document.getElementById('clone-status');
+            
+            cloneStatus.textContent = '开始克隆过程...';
+            cloneStatus.style.color = '#00cec9';
+            
+            // 这里将在app.js中实现实际克隆逻辑
+            // 现在只显示进度效果
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    progressBar.style.width = '100%';
+                    progressText.textContent = '克隆完成！';
+                    cloneStatus.textContent = `克隆完成！${operationType === 'modify-id' ? '已修改Local ID为: ' + customLocalId : '已成功克隆到新账号'}`;
+                    cloneStatus.style.color = '#00cec9';
+                } else {
+                    progressBar.style.width = progress + '%';
+                    progressText.textContent = `克隆进度: ${Math.round(progress)}%`;
+                }
+            }, 300);
+        }
+    </script>
+    
+    <!-- 在结尾处放上app.js -->
+    <script src="app.js"></script>
+</body>
+</html>
