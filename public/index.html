@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPMCY - CPM账号克隆工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <meta name="author" content="快手Jack">
+    
+    <style>
+        /* 基础样式与字体定义 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Exo 2', sans-serif;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            min-height: 100vh;
+            color: #e0e0ff;
+            line-height: 1.6;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* 科技风发光文字效果 */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(106, 17, 203, 0.7),
+                         0 0 20px rgba(106, 17, 203, 0.5),
+                         0 0 30px rgba(37, 117, 252, 0.3);
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .tech-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .tech-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6a11cb, #2575fc, transparent);
+            border-radius: 2px;
+        }
+
+        /* 背景科技元素 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(106, 17, 203, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(37, 117, 252, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(0, 255, 255, 0.05) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        /* 密钥验证界面 */
+        #key-verification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .key-container {
+            background: rgba(16, 16, 48, 0.85);
+            border-radius: 20px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                        inset 0 0 20px rgba(106, 17, 203, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(106, 17, 203, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .key-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 30%,
+                rgba(106, 17, 203, 0.1) 50%,
+                transparent 70%
+            );
+            animation: scan 3s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%) translateX(-100%) rotate(45deg); }
+            100% { transform: translateY(100%) translateX(100%) rotate(45deg); }
+        }
+
+        .key-container h2 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .key-container h2 i {
+            color: #6a11cb;
+            filter: drop-shadow(0 0 8px rgba(106, 17, 203, 0.8));
+        }
+
+        .key-container p {
+            color: #a0a0ff;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .key-input-group {
+            margin-bottom: 25px;
+        }
+
+        .key-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(10, 10, 30, 0.7);
+            border: 2px solid rgba(106, 17, 203, 0.5);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-family: 'Exo 2', sans-serif;
+            transition: all 0.3s ease;
+            outline: none;
+            box-shadow: 0 0 15px rgba(106, 17, 203, 0.2);
+        }
+
+        .key-input:focus {
+            border-color: #6a11cb;
+            box-shadow: 0 0 20px rgba(106, 17, 203, 0.5),
+                        inset 0 0 10px rgba(106, 17, 203, 0.2);
+            background: rgba(20, 20, 40, 0.8);
+        }
+
+        .key-input::placeholder {
+            color: #666699;
+        }
+
+        .verify-btn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(106, 17, 203, 0.3),
+                        inset 0 0 15px rgba(255, 255, 255, 0.1);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(106, 17, 203, 0.4),
+                        inset 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .verify-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent 20%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 80%
+            );
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+        }
+
+        .verify-btn:hover::after {
+            left: 100%;
+        }
+
+        #key-status {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: none;
+        }
+
+        .key-status-error {
+            background: rgba(255, 65, 108, 0.1);
+            color: #ff416c;
+            border: 1px solid rgba(255, 65, 108, 0.3);
+            box-shadow: 0 0 15px rgba(255, 65, 108, 0.2);
+        }
+
+        /* 主内容容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .container.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 头部样式 */
+        .header {
+            background: rgba(16, 16, 48, 0.85);
+            border-radius: 20px;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                        inset 0 0 30px rgba(106, 17, 203, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(106, 17, 203, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #6a11cb, #2575fc, #6a11cb);
+            border-radius: 3px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .header h1 i {
+            color: #6a11cb;
+            filter: drop-shadow(0 0 10px rgba(106, 17, 203, 0.8));
+        }
+
+        .subtitle {
+            color: #a0a0ff;
+            font-size: 1.2rem;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: rgba(16, 16, 48, 0.8);
+            border-radius: 18px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3),
+                        inset 0 0 25px rgba(106, 17, 203, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(106, 17, 203, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+                        inset 0 0 30px rgba(106, 17, 203, 0.15);
+            border-color: rgba(106, 17, 203, 0.4);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(to bottom, #6a11cb, #2575fc);
+        }
+
+        .card h2 {
+            color: #ffffff;
+            font-size: 1.9rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        .card h2 i {
+            color: #6a11cb;
+            filter: drop-shadow(0 0 8px rgba(106, 17, 203, 0.8));
+        }
+
+        /* 账号信息样式 */
+        .account-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .info-row {
+            background: linear-gradient(135deg, rgba(30, 30, 70, 0.7) 0%, rgba(20, 20, 50, 0.7) 100%);
+            padding: 22px;
+            border-radius: 12px;
+            border-left: 4px solid #6a11cb;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2),
+                        inset 0 0 15px rgba(106, 17, 203, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .info-row:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3),
+                        inset 0 0 20px rgba(106, 17, 203, 0.15);
+        }
+
+        .info-label {
+            display: block;
+            color: #a0a0ff;
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            display: block;
+            color: #ffffff;
+            font-size: 1.3rem;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.2) 0%, rgba(37, 117, 252, 0.2) 100%);
+            border: 1px solid rgba(106, 17, 203, 0.5);
+            box-shadow: 0 0 15px rgba(106, 17, 203, 0.2);
+        }
+
+        /* 表单样式 */
+        .info-text {
+            color: #a0a0ff;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 10px;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(10, 10, 30, 0.7);
+            border: 2px solid rgba(106, 17, 203, 0.5);
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            font-family: 'Exo 2', sans-serif;
+            box-shadow: 0 0 15px rgba(106, 17, 203, 0.1);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6a11cb;
+            box-shadow: 0 0 20px rgba(106, 17, 203, 0.5),
+                        inset 0 0 10px rgba(106, 17, 203, 0.2);
+            background: rgba(20, 20, 40, 0.8);
+        }
+
+        .form-group input::placeholder {
+            color: #666699;
+        }
+
+        /* 操作选项样式 */
+        .operation-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .option-item {
+            position: relative;
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .option-item label {
+            display: block;
+            padding: 25px 20px;
+            background: rgba(20, 20, 40, 0.6);
+            border: 2px solid rgba(106, 17, 203, 0.3);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .option-item input[type="radio"]:checked + label {
+            border-color: #6a11cb;
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.1) 0%, rgba(37, 117, 252, 0.1) 100%);
+            transform: scale(1.02);
+            box-shadow: 0 12px 25px rgba(106, 17, 203, 0.3),
+                        inset 0 0 20px rgba(106, 17, 203, 0.1);
+        }
+
+        .option-item label strong {
+            display: block;
+            color: #ffffff;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .option-item label small {
+            color: #a0a0ff;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px 35px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn i {
+            font-size: 1.2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(106, 17, 203, 0.3),
+                        inset 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(106, 17, 203, 0.4),
+                        inset 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(74, 85, 104, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(74, 85, 104, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 65, 108, 0.4);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent 20%,
+                rgba(255, 255, 255, 0.1) 50%,
+                transparent 80%
+            );
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+        }
+
+        .btn:hover::after {
+            left: 100%;
+        }
+
+        /* 警告信息样式 */
+        .warning {
+            background: linear-gradient(135deg, rgba(255, 65, 108, 0.1) 0%, rgba(255, 75, 43, 0.1) 100%);
+            border: 2px solid rgba(255, 65, 108, 0.3);
+            color: #ff8fa3;
+            padding: 22px;
+            border-radius: 12px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(255, 65, 108, 0.1);
+        }
+
+        .time-warning {
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.1) 0%, rgba(241, 196, 15, 0.1) 100%);
+            border: 2px solid rgba(243, 156, 18, 0.3);
+            color: #ffd166;
+            padding: 22px;
+            border-radius: 12px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.1);
+        }
+
+        .warning i, .time-warning i {
+            font-size: 1.4rem;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        /* 进度条样式 */
+        .progress-container {
+            background: rgba(20, 20, 40, 0.7);
+            border-radius: 12px;
+            height: 25px;
+            overflow: hidden;
+            margin: 25px 0;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+            width: 0%;
+            transition: width 0.4s ease;
+            position: relative;
+            box-shadow: 0 0 20px rgba(106, 17, 203, 0.5);
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 25%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 75%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin: 15px 0;
+            color: #ffffff;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            text-shadow: 0 0 10px rgba(106, 17, 203, 0.5);
+        }
+
+        .time-estimate {
+            text-align: center;
+            color: #a0a0ff;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 状态日志样式 */
+        .status-log {
+            background: rgba(10, 10, 30, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid rgba(106, 17, 203, 0.3);
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .log-entry {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(106, 17, 203, 0.1);
+            color: #e0e0ff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .log-entry:hover {
+            background: rgba(106, 17, 203, 0.05);
+            border-radius: 6px;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-entry i {
+            color: #6a11cb;
+            filter: drop-shadow(0 0 5px rgba(106, 17, 203, 0.8));
+        }
+
+        /* 说明样式 */
+        .instructions ol {
+            padding-left: 25px;
+            margin-bottom: 25px;
+        }
+
+        .instructions li {
+            margin-bottom: 15px;
+            color: #e0e0ff;
+            padding-left: 10px;
+            position: relative;
+        }
+
+        .instructions li::before {
+            content: '▸';
+            position: absolute;
+            left: -15px;
+            color: #6a11cb;
+            font-weight: bold;
+        }
+
+        .instructions li b {
+            color: #ffffff;
+            font-weight: 600;
+            text-shadow: 0 0 8px rgba(106, 17, 203, 0.5);
+        }
+
+        .note {
+            background: linear-gradient(135deg, rgba(39, 174, 96, 0.1) 0%, rgba(46, 204, 113, 0.1) 100%);
+            border: 2px solid rgba(39, 174, 96, 0.3);
+            color: #7effb2;
+            padding: 22px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(39, 174, 96, 0.1);
+        }
+
+        .note i {
+            color: #2ecc71;
+            filter: drop-shadow(0 0 5px rgba(46, 204, 113, 0.8));
+        }
+
+        .author-info {
+            background: linear-gradient(135deg, rgba(142, 68, 173, 0.1) 0%, rgba(155, 89, 182, 0.1) 100%);
+            border: 2px solid rgba(142, 68, 173, 0.3);
+            color: #d8a5ff;
+            padding: 22px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            margin-top: 25px;
+            box-shadow: 0 0 20px rgba(142, 68, 173, 0.1);
+        }
+
+        .author-info i {
+            color: #9b59b6;
+            filter: drop-shadow(0 0 5px rgba(155, 89, 182, 0.8));
+        }
+
+        /* 页脚样式 */
+        .footer {
+            text-align: center;
+            color: #a0a0ff;
+            padding: 30px 0;
+            margin-top: 40px;
+            border-top: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        .footer p {
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .disclaimer {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+
+        /* 状态消息样式 */
+        .status {
+            padding: 15px 18px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-weight: 500;
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(106, 17, 203, 0.3);
+        }
+
+        /* 工具类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .card {
+                padding: 25px;
+            }
+            
+            .card h2 {
+                font-size: 1.6rem;
+            }
+            
+            .account-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .operation-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .key-container {
+                padding: 35px 25px;
+            }
+            
+            .key-container h2 {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 25px 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .info-value {
+                font-size: 1.2rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .card h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 密钥验证界面 - 用户输入密钥 -->
+    <div id="key-verification">
+        <div class="key-container">
+            <h2 class="tech-title glow-text"><i class="fas fa-lock"></i> 系统访问验证</h2>
+            <p class="glow-text">请输入访问密钥以继续使用CPMCY克隆工具</p>
+            
+            <div class="key-input-group">
+                <input type="password" id="access-key" class="key-input" placeholder="请输入访问密钥" autocomplete="off">
+            </div>
+            
+            <button id="verify-key-btn" class="verify-btn glow-text">
+                <i class="fas fa-check-circle"></i> 验证密钥
+            </button>
+            
+            <div id="key-status" class="key-status-error"></div>
+        </div>
+    </div>
+
+    <!-- 主界面 -->
+    <div class="container" id="main-container">
+        <header class="header">
+            <h1 class="tech-title glow-text"><i class="fas fa-user-shield"></i> CPMCY - CPM账号数据克隆工具</h1>
+            <p class="subtitle glow-text">快手Jack制作 | 克隆CPM账号数据到其他账号</p>
+        </header>
+
+        <!-- 账号信息展示区 -->
+        <div class="card hidden" id="account-info-section">
+            <h2 class="tech-title"><i class="fas fa-user-circle"></i> 当前账号信息</h2>
+            <div class="account-details">
+                <div class="info-row">
+                    <span class="info-label">账号昵称:</span>
+                    <span class="info-value glow-text" id="account-name">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">游戏金币:</span>
+                    <span class="info-value glow-text" id="account-money">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">车辆数量:</span>
+                    <span class="info-value glow-text" id="account-cars">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Local ID:</span>
+                    <span class="info-value glow-text" id="account-localid">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">账号状态:</span>
+                    <span class="info-value status-badge glow-text" id="account-status">未登录</span>
+                </div>
+            </div>
+            <button id="logout-btn" class="btn btn-secondary">
+                <i class="fas fa-sign-out-alt"></i> 退出登录
+            </button>
+        </div>
+
+        <!-- 登录部分 -->
+        <div class="card" id="login-section">
+            <h2 class="tech-title"><i class="fas fa-sign-in-alt"></i> 第一步：源账号登录</h2>
+            <p class="info-text">请登录要被克隆的源账号（你的主账号）</p>
+            <div class="form-group">
+                <label>邮箱地址</label>
+                <input type="email" id="source-email" placeholder="输入CPM账号邮箱" required>
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="source-password" placeholder="输入CPM账号密码" required>
+            </div>
+            <button id="login-btn" class="btn btn-primary">
+                <i class="fas fa-key"></i> 登录并验证账号
+            </button>
+            <div id="login-status" class="status"></div>
+        </div>
+
+        <!-- 克隆部分 -->
+        <div class="card hidden" id="clone-section">
+            <h2 class="tech-title"><i class="fas fa-clone"></i> 第二步：选择操作类型</h2>
+            
+            <!-- 新增：操作类型选择 -->
+            <div class="form-group">
+                <label>选择操作类型</label>
+                <div class="operation-options">
+                    <div class="option-item">
+                        <input type="radio" id="op-type1" name="operation-type" value="modify-id" checked>
+                        <label for="op-type1">
+                            <strong>选项1：修改当前账号ID</strong><br>
+                            <small>仅修改当前登录账号的Local ID，其他数据不变</small>
+                        </label>
+                    </div>
+                    <div class="option-item">
+                        <input type="radio" id="op-type2" name="operation-type" value="clone-to-new">
+                        <label for="op-type2">
+                            <strong>选项2：克隆到新账号</strong><br>
+                            <small>复制当前账号所有数据到另一个账号（覆盖目标账号）</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 自定义Local ID输入框 -->
+            <div class="form-group" id="custom-id-group">
+                <label>自定义新的Local ID</label>
+                <input type="text" id="custom-localid" placeholder="输入新的Local ID（字母数字，建议10-20位）" required>
+            </div>
+            
+            <!-- 目标账号凭据部分（只在选项2时显示） -->
+            <div id="target-credentials" class="hidden">
+                <div class="form-group">
+                    <label>目标账号邮箱</label>
+                    <input type="email" id="target-email" placeholder="输入目标账号邮箱">
+                </div>
+                <div class="form-group">
+                    <label>目标账号密码</label>
+                    <input type="password" id="target-password" placeholder="输入目标账号密码">
+                </div>
+            </div>
+            
+            <div class="warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>警告：</strong> 这将覆盖目标账号的所有数据！请谨慎操作！
+            </div>
+            
+            <div class="time-warning">
+                <i class="fas fa-clock"></i>
+                <strong>注意：</strong> 克隆过程可能需要2-5分钟，请勿关闭页面！
+            </div>
+            
+            <button id="clone-btn" class="btn btn-danger">
+                <i class="fas fa-clone"></i> 开始执行
+            </button>
+            <div id="clone-status" class="status"></div>
+        </div>
+
+        <!-- 状态显示部分 -->
+        <div class="card" id="status-section">
+            <h2 class="tech-title"><i class="fas fa-info-circle"></i> 克隆进度状态</h2>
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+                <div class="progress-text" id="progress-text">准备开始...</div>
+            </div>
+            <div class="time-estimate" id="time-estimate">预计时间: --</div>
+            <div class="status-log" id="status-log">
+                <div class="log-entry"><i class="fas fa-info-circle"></i> 系统已就绪，请先登录源账号</div>
+            </div>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="card instructions">
+            <h2 class="tech-title"><i class="fas fa-question-circle"></i> 使用说明</h2>
+            <ol>
+                <li>使用<b>源账号</b>（你要克隆的主账号）登录</li>
+                <li>系统会显示账号的详细信息</li>
+                <li>选择操作类型：修改当前账号ID 或 克隆到新账号</li>
+                <li>输入自定义Local ID</li>
+                <li>如选择克隆到新账号，输入目标账号凭据</li>
+                <li><b>重要：</b>克隆过程中不要关闭浏览器！</li>
+            </ol>
+            <p class="note"><i class="fas fa-lightbulb"></i> <strong>提示：</strong> 克隆时间取决于车辆数量，通常需要2-5分钟。</p>
+            <div class="author-info">
+                <i class="fas fa-user-tie"></i> 开发者：快手Jack
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p class="glow-text">CPMCY 账号克隆工具 v2.2 | 快手Jack制作</p>
+            <p class="disclaimer">仅供学习交流使用，请勿用于非法用途。使用本工具造成的任何问题，作者概不负责。</p>
+        </footer>
+    </div>
+
+    <script>
+        // 密钥验证逻辑 - 不包含任何密码
+        document.addEventListener('DOMContentLoaded', function() {
+            const keyVerification = document.getElementById('key-verification');
+            const mainContainer = document.getElementById('main-container');
+            const accessKeyInput = document.getElementById('access-key');
+            const verifyKeyBtn = document.getElementById('verify-key-btn');
+            const keyStatus = document.getElementById('key-status');
+            
+            // 检查本地存储中是否有已验证的会话
+            const verifiedSession = localStorage.getItem('cpmcy_verified_session');
+            if (verifiedSession === 'true') {
+                // 会话有效，直接进入主界面
+                const expiryTime = localStorage.getItem('cpmcy_session_expiry');
+                if (expiryTime && Date.now() < parseInt(expiryTime)) {
+                    keyVerification.style.display = 'none';
+                    mainContainer.classList.add('visible');
+                    return;
+                } else {
+                    // 会话过期，清除存储
+                    localStorage.removeItem('cpmcy_verified_session');
+                    localStorage.removeItem('cpmcy_session_expiry');
+                }
+            }
+            
+            verifyKeyBtn.addEventListener('click', async function() {
+                const enteredKey = accessKeyInput.value.trim();
+                
+                if (!enteredKey) {
+                    showKeyStatus('请输入访问密钥', 'error');
+                    return;
+                }
+                
+                // 向后端发送验证请求
+                showKeyStatus('正在验证密钥...', 'info');
+                verifyKeyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 验证中';
+                verifyKeyBtn.disabled = true;
+                
+                try {
+                    const response = await fetch('/api/verify-key', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ key: enteredKey })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.ok) {
+                        showKeyStatus('验证成功，正在进入系统...', 'success');
+                        
+                        // 保存验证会话（有效12小时）
+                        localStorage.setItem('cpmcy_verified_session', 'true');
+                        localStorage.setItem('cpmcy_session_expiry', (Date.now() + 12 * 60 * 60 * 1000).toString());
+                        
+                        // 添加成功动画
+                        verifyKeyBtn.innerHTML = '<i class="fas fa-check"></i> 验证成功';
+                        
+                        // 延迟后显示主界面
+                        setTimeout(() => {
+                            keyVerification.style.opacity = '0';
+                            keyVerification.style.transform = 'scale(0.9)';
+                            keyVerification.style.transition = 'all 0.5s ease';
+                            
+                            setTimeout(() => {
+                                keyVerification.style.display = 'none';
+                                mainContainer.classList.add('visible');
+                            }, 500);
+                        }, 1500);
+                    } else {
+                        showKeyStatus(result.message || '密钥错误，请重新输入', 'error');
+                        accessKeyInput.value = '';
+                        accessKeyInput.focus();
+                        verifyKeyBtn.innerHTML = '<i class="fas fa-check-circle"></i> 验证密钥';
+                        verifyKeyBtn.disabled = false;
+                        
+                        // 添加错误动画
+                        accessKeyInput.style.animation = 'shake 0.5s';
+                        setTimeout(() => {
+                            accessKeyInput.style.animation = '';
+                        }, 500);
+                    }
+                } catch (error) {
+                    showKeyStatus('网络错误，请检查连接', 'error');
+                    verifyKeyBtn.innerHTML = '<i class="fas fa-check-circle"></i> 验证密钥';
+                    verifyKeyBtn.disabled = false;
+                }
+            });
+            
+            // 按Enter键验证
+            accessKeyInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    verifyKeyBtn.click();
+                }
+            });
+            
+            // 添加抖动动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            function showKeyStatus(message, type) {
+                keyStatus.textContent = message;
+                keyStatus.className = '';
+                keyStatus.style.display = 'block';
+                
+                if (type === 'error') {
+                    keyStatus.classList.add('key-status-error');
+                } else if (type === 'success') {
+                    keyStatus.style.background = 'rgba(39, 174, 96, 0.1)';
+                    keyStatus.style.color = '#2ecc71';
+                    keyStatus.style.border = '1px solid rgba(39, 174, 96, 0.3)';
+                } else {
+                    keyStatus.style.background = 'rgba(106, 17, 203, 0.1)';
+                    keyStatus.style.color = '#6a11cb';
+                    keyStatus.style.border = '1px solid rgba(106, 17, 203, 0.3)';
+                }
+            }
+            
+            // 添加全局API请求函数
+            window.makeAPIRequest = async function(url, data) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    return await response.json();
+                } catch (error) {
+                    console.error('API request error:', error);
+                    return { ok: false, message: '网络请求失败' };
+                }
+            };
+        });
+    </script>
+    
+    <!-- 您的app.js文件 - 这里不包含任何密码 -->
+    <script src="app.js"></script>
+</body>
+</html>
